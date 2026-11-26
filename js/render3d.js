@@ -100,7 +100,8 @@ function init3D() {
   R3.raycaster = new THREE.Raycaster();
   R3.groundPlane = new THREE.Plane(V3(0, 1, 0), 0);
 
-  scene.add(new THREE.HemisphereLight('#7a3346', '#0a0206', 0.8));
+  R3.hemi = new THREE.HemisphereLight('#7a3346', '#0a0206', 0.8);
+  scene.add(R3.hemi);
   scene.add(new THREE.AmbientLight('#2a1018', 0.55));
   const moon = new THREE.DirectionalLight('#ffd6dc', 0.85);
   moon.position.set(-14, 40, 18);
@@ -111,6 +112,25 @@ function init3D() {
   moon.shadow.bias = -0.0008;
   scene.add(moon);
   R3.moon = moon;
+
+  // Огромная Кровавая Луна / Затмение на горизонте за ареной
+  const moonGrp = new THREE.Group();
+  moonGrp.position.set(0, 18, -72);
+  const moonDisc = new THREE.Mesh(
+    new THREE.CircleGeometry(13, 48),
+    new THREE.MeshBasicMaterial({ color: '#e11d48', fog: false })
+  );
+  const moonCore = new THREE.Mesh(
+    new THREE.CircleGeometry(11.6, 48),
+    new THREE.MeshBasicMaterial({ color: '#090206', fog: false })
+  );
+  moonCore.position.z = 0.08;
+  const moonHalo = glowSprite('#e11d48', 46, 0.55);
+  moonHalo.material.fog = false;
+  moonHalo.position.z = -0.2;
+  moonGrp.add(moonHalo, moonDisc, moonCore);
+  scene.add(moonGrp);
+  R3.skyMoon = { grp: moonGrp, disc: moonDisc, core: moonCore, halo: moonHalo };
 
   const abyss = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.MeshStandardMaterial({ color: '#08020a', roughness: 1 }));
   abyss.rotation.x = -Math.PI / 2; abyss.position.y = -0.06;
@@ -232,7 +252,8 @@ function buildArena3D() {
 
   // Ритуальная печать в центре
   const seal = new THREE.Group(); seal.position.set(cx, 0.03, cz);
-  const sMat = addMat('#e11d48', 0.22);
+  const sMat = addMat('#e11d48', 0.24);
+  R3.sealMat = sMat;
   const sr = Math.min(aw, ah) * 0.28;
   [[sr * 0.97, sr], [sr * 0.71, sr * 0.74]].forEach(([a, b]) => {
     seal.add(new THREE.Mesh(new THREE.RingGeometry(a, b, 64).rotateX(-Math.PI / 2), sMat));
@@ -260,13 +281,35 @@ function buildArena3D() {
 }
 
 function updateArenaFx(time) {
-  if (R3.seal) R3.seal.rotation.y = time * 0.14;
-  if (R3.wallMat) R3.wallMat.opacity = (0.55 + Math.sin(time * 4.5) * 0.25) * 0.5;
+  const accent = (typeof boss !== 'undefined' && boss && gameState !== 'MENU') ? boss.color : '#e11d48';
+  const p2 = !!(typeof boss !== 'undefined' && boss && boss.phase2 && gameState !== 'MENU');
+  const col = C(accent);
+
+  if (R3.seal) R3.seal.rotation.y = time * (p2 ? 0.28 : 0.14);
+  if (R3.sealMat) R3.sealMat.color.lerp(col, 0.06);
+  if (R3.wallMat) {
+    R3.wallMat.color.lerp(col, 0.06);
+    R3.wallMat.opacity = (0.55 + Math.sin(time * (p2 ? 7.5 : 4.5)) * 0.25) * (p2 ? 0.65 : 0.5);
+  }
+  if (R3.hemi) R3.hemi.color.lerp(col, 0.04);
+  if (R3.scene && R3.scene.fog) {
+    const fogTarget = col.clone().multiplyScalar(p2 ? 0.16 : 0.09);
+    R3.scene.fog.color.lerp(fogTarget, 0.04);
+  }
+  if (R3.skyMoon) {
+    R3.skyMoon.disc.material.color.lerp(col, 0.06);
+    R3.skyMoon.halo.material.color.lerp(col, 0.06);
+    const pulse = 1 + Math.sin(time * (p2 ? 4 : 1.5)) * (p2 ? 0.08 : 0.03);
+    R3.skyMoon.halo.scale.setScalar((p2 ? 56 : 44) * pulse);
+    R3.skyMoon.halo.material.opacity = p2 ? 0.78 : 0.48;
+    R3.skyMoon.core.scale.setScalar(p2 ? 0.82 : 0.92);
+  }
   (R3.torches || []).forEach(t => {
     const f = 0.8 + Math.sin(time * 14 + t.i * 2.1) * 0.15 + Math.sin(time * 23 + t.i) * 0.06;
+    t.fl.material.color.lerp(col, 0.06);
     t.fl.scale.set(2.8 * f, 3.2 * f, 1);
     t.fl2.scale.setScalar(1.0 * f);
-    if (t.light) t.light.intensity = 1.4 * f;
+    if (t.light) { t.light.color.lerp(col, 0.06); t.light.intensity = (p2 ? 1.9 : 1.4) * f; }
   });
 }
 
@@ -311,6 +354,9 @@ function buildPlayer3D(skin) {
   const shield = new THREE.Mesh(new THREE.TorusGeometry(1.25, 0.05, 6, 16), addMat(skin.dualBlade || '#ff1744', 0.85)); shield.rotation.x = Math.PI / 2; shield.position.y = 1.2; g.add(shield);
   const light = new THREE.PointLight(skin.glow, 1.25, 9); light.position.y = 1.6; g.add(light);
   const aura = glowSprite(skin.glow, 2.8, 0.16); aura.position.y = 1.3; g.add(aura);
+  // Тонкое кольцо-подсветка под ногами героя для идеальной читаемости в замесе
+  const footRing = new THREE.Mesh(R3.geo.thinRing, addMat(skin.glow, 0.55));
+  footRing.position.y = 0.05; footRing.scale.setScalar(0.95); g.add(footRing);
   R3.dyn.add(g);
 
   const scarfMat = glowMat(skin.scarf, 1.05);
@@ -634,7 +680,7 @@ function hideBossFx() {
 function updateBoss3D(dt, show) {
   const B = R3.boss;
   if (!B) { hideBossFx(); return; }
-  const vis = show && boss && !(boss.dead && (boss._shattered || pendingOutcome !== 'WIN'));
+  const vis = show && boss && !(boss.dead && (boss._shattered || pendingOutcome !== 'WIN')) && !(boss.sigInvis > 0);
   B.group.visible = !!vis;
   if (B.twin) B.twin.group.visible = !!(show && boss && boss.twin2 && !boss.twin2.dead);
   if (!vis) { hideBossFx(); return; }

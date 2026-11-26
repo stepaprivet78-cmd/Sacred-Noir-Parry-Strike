@@ -15,10 +15,14 @@ const ACH = {
     totalKills: 0
   },
   run: {
-    lastDamageSource: 'melee', // 'melee' | 'wave' | 'iaido' | 'execution' | 'parry_reflect' | 'blood_debt' | 'clash'
+    lastDamageSource: 'melee', // 'melee' | 'wave' | 'iaido' | 'execution' | 'parry_reflect' | 'blood_debt' | 'clash' | 'totem'
     executions: 0,
     clashesWon: 0,
-    perfectDodges: 0
+    perfectDodges: 0,
+    dealtDamage: false,
+    altarsBroken: 0,
+    exhaustCount: 0,
+    dodgeTimes: []
   },
   filter: 'all'
 };
@@ -154,7 +158,20 @@ function getAchievementsCatalog() {
       desc: 'Совершить 30 идеальных уворотов сквозь атаки врагов.',
       statKey: 'totalPerfectDodges',
       target: 30
-    }
+    },
+    // 4. Фановые, ситуативные и «не про победу» достижения
+    { id: 'fun_pacifist',      cat: 'fun', icon: '🕊️', title: 'Пацифист',             desc: 'Продержаться в бою 25 секунд, не нанеся боссу ни одного удара.' },
+    { id: 'fun_altar_breaker', cat: 'fun', icon: '🕯️', title: 'Иконоборец',           desc: 'Разрубить 3 Алтаря Крови за один бой.' },
+    { id: 'fun_totem_shock',   cat: 'fun', icon: '⚡',  title: 'Повелитель молний',    desc: 'Зарядить Тотем Перегрузки 3 ударами и ударить босса молнией.' },
+    { id: 'fun_corpse_pull',   cat: 'fun', icon: '💀',  title: 'Из рук мертвеца',      desc: 'Вырвать клинок со своего павшего трупа на арене.' },
+    { id: 'fun_stubborn',      cat: 'fun', icon: '🔥',  title: 'Упрямый ронин',        desc: 'Палить 3 раза на одном боссе и снова бросить ему вызов.' },
+    { id: 'fun_untouchable_3', cat: 'fun', icon: '🌪️', title: 'Неуловимый',           desc: 'Выполнить 3 Идеальных Уворота за 10 секунд.' },
+    { id: 'fun_exhausted_3',   cat: 'fun', icon: '😮‍💨', title: 'Загнанный зверь',      desc: 'Довести себя до Изнеможения 3 раза за один бой.' },
+    { id: 'fun_debt_miss',     cat: 'fun', icon: '🩸',  title: 'Долг платежом красен', desc: 'Промахнуться парированием под контрактом «Кровавый долг».' },
+    { id: 'fun_phantom_crit',  cat: 'fun', icon: '🗡️', title: 'Удар из тени',         desc: 'Нанести теневой крит ×2.5 в стиле «Призрак» после уворота.' },
+    { id: 'fun_style_swap',    cat: 'fun', icon: '🎭',  title: 'Новая школа',          desc: 'Выйти в бой в альтернативном стиле («Палач» или «Призрак»).' },
+    { id: 'fun_meloman',       cat: 'fun', icon: '🎵',  title: 'Меломан Бездны',       desc: 'Переключить саундтрек или загрузить свой MP3.' },
+    { id: 'fun_close_call',    cat: 'fun', icon: '❤️‍🔥', title: 'На волоске',           desc: 'Провести Казнь босса, имея всего 1 HP.' }
   ];
 
   return list.concat(styleList);
@@ -165,6 +182,10 @@ function achResetRun() {
   ACH.run.executions = 0;
   ACH.run.clashesWon = 0;
   ACH.run.perfectDodges = 0;
+  ACH.run.dealtDamage = false;
+  ACH.run.altarsBroken = 0;
+  ACH.run.exhaustCount = 0;
+  ACH.run.dodgeTimes = [];
 }
 
 function achSetDamageSource(src) {
@@ -235,13 +256,35 @@ function achOnParry() {
 function achOnExecution() {
   ACH.run.executions++;
   ACH.stats.totalExecutions = (ACH.stats.totalExecutions || 0) + 1;
+  if (typeof player !== 'undefined' && player && player.hp === 1) achUnlock('fun_close_call', false);
   achCheckProgress(false);
 }
 
 function achOnPerfectDodge() {
   ACH.run.perfectDodges++;
   ACH.stats.totalPerfectDodges = (ACH.stats.totalPerfectDodges || 0) + 1;
+  const now = typeof runTimer !== 'undefined' ? runTimer : 0;
+  ACH.run.dodgeTimes.push(now);
+  ACH.run.dodgeTimes = ACH.run.dodgeTimes.filter(t => now - t <= 10);
+  if (ACH.run.dodgeTimes.length >= 3) achUnlock('fun_untouchable_3', false);
   achCheckProgress(false);
+}
+
+function achOnAltarBroken() {
+  ACH.run.altarsBroken++;
+  if (ACH.run.altarsBroken >= 3) achUnlock('fun_altar_breaker', false);
+}
+function achOnTotemTriggered() { achUnlock('fun_totem_shock', false); }
+function achOnCorpsePull() { achUnlock('fun_corpse_pull', false); }
+function achOnExhausted() {
+  ACH.run.exhaustCount++;
+  if (ACH.run.exhaustCount >= 3) achUnlock('fun_exhausted_3', false);
+}
+function achOnDebtMiss() { achUnlock('fun_debt_miss', false); }
+function achOnPhantomCrit() { achUnlock('fun_phantom_crit', false); }
+function achOnMusicChange() { achUnlock('fun_meloman', false); }
+function achTickFight(runTimeSec) {
+  if (!ACH.run.dealtDamage && runTimeSec >= 25) achUnlock('fun_pacifist', false);
 }
 
 function achOnClashWin() {
@@ -360,6 +403,7 @@ function openAchievementsModal(filter) {
     if (ACH.filter === 'unlocked') return !!ACH.unlocked[a.id];
     if (ACH.filter === 'boss') return a.cat === 'boss';
     if (ACH.filter === 'style') return a.cat === 'style' || a.cat === 'mastery';
+    if (ACH.filter === 'fun') return a.cat === 'fun';
     return true;
   });
 

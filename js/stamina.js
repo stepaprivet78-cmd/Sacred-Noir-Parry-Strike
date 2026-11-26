@@ -13,8 +13,10 @@ function staminaInit(p) {
 function updateStamina(p, dt) {
   if (p.stamina === undefined) staminaInit(p);
   if (p.exhausted > 0) { p.exhausted -= dt; p.slowMul = (p.slowMul || 1) * 0.6; }
-  if (p.stamDelay > 0) p.stamDelay -= dt;
-  else if (p.stamina < STAM.max) p.stamina = Math.min(STAM.max, p.stamina + STAM.regen * (p.exhausted > 0 ? 0.6 : 1) * dt);
+  const hasFeather = typeof hasTalisman === 'function' && hasTalisman('stamina_feather');
+  const regenRate = STAM.regen * (hasFeather ? 1.35 : 1);
+  if (p.stamDelay > 0) p.stamDelay -= dt * (hasFeather ? 1.3 : 1);
+  else if (p.stamina < STAM.max) p.stamina = Math.min(STAM.max, p.stamina + regenRate * (p.exhausted > 0 ? 0.6 : 1) * dt);
   if (p.stamina < STAM.max) p.stamShow = 1.2; else if (p.stamShow > 0) p.stamShow -= dt;
 }
 
@@ -37,6 +39,7 @@ function spendStamina(p, kind) {
     p.stamina = 0;
     p.exhausted = STAM.exhaustTime;
     p.stamDelay = 0.35;
+    if (typeof achOnExhausted === 'function') achOnExhausted();
     spawnFloatingText(p.x, p.y - 30, '😮‍💨 ИЗНЕМОЖЕНИЕ', '#a3e635', 15);
   }
   return true;

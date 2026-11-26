@@ -275,6 +275,7 @@
         <span><b class="text-cyan-300">ПКМ / Пробел / K</b> Парирование</span>
         <span><b class="text-amber-300">Shift</b> Рывок</span>
         <span><b class="text-fuchsia-300">Q / E / L</b> Иайдо (50🩸)</span>
+        <span><b class="text-emerald-300">R / F</b> Фляга</span>
         <span><b class="text-zinc-200">ESC</b> Пауза</span>
       </div>
     </div>
@@ -308,6 +309,11 @@
           <span class="text-[10px] font-black leading-none">ИАЙДО</span>
           <span id="tbtn-iaido-cost" class="text-[9px] text-fuchsia-300 mt-0.5">50🩸</span>
         </button>
+        <!-- Blood Flask (Estus) -->
+        <button id="tbtn-flask" class="touch-btn absolute bottom-[150px] right-[72px] w-[52px] h-[52px] rounded-full bg-emerald-950/85 border-2 border-emerald-400/85 backdrop-blur-sm flex flex-col items-center justify-center text-emerald-100 shadow-lg transition-opacity">
+          <span class="text-[11px] font-black leading-none">🧪</span>
+          <span id="tbtn-flask-count" class="text-[9px] text-emerald-300 mt-0.5">2</span>
+        </button>
       </div>
     </div>
 
@@ -337,6 +343,9 @@
           </button>
           <button id="btn-armory" class="px-3.5 py-2 bg-zinc-950/90 hover:bg-rose-950/70 border border-rose-800/80 hover:border-rose-400 rounded-lg text-[11px] font-bold tracking-wider text-rose-200 transition shadow-md">
             🗡️ ОРУЖЕЙНАЯ (1/5)
+          </button>
+          <button id="btn-talismans" class="px-3.5 py-2 bg-zinc-950/90 hover:bg-emerald-950/70 border border-emerald-700/80 hover:border-emerald-400 rounded-lg text-[11px] font-bold tracking-wider text-emerald-200 transition shadow-md">
+            💍 ТАЛИСМАНЫ (0/2)
           </button>
           <button id="btn-achievements" class="px-3.5 py-2 bg-zinc-950/90 hover:bg-amber-950/70 border border-amber-600/80 hover:border-amber-400 rounded-lg text-[11px] font-bold tracking-wider text-amber-200 transition shadow-md">
             🏆 АЧИВКИ (0/27)
@@ -371,6 +380,16 @@
             <input id="chk-unlock-all" type="checkbox" class="accent-rose-600" />
             <span class="font-bold">🔓 ОТКРЫТЬ ВСЕХ</span>
           </label>
+        </div>
+
+        <!-- Combat Style Selector -->
+        <div class="w-full max-w-2xl flex flex-col items-center mb-4">
+          <div class="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2">
+            <button data-style="ronin" class="style-choice px-3 py-1.5 rounded-lg text-[11px] font-black tracking-wider border transition">⚔️ РОНИН · Баланс</button>
+            <button data-style="executioner" class="style-choice px-3 py-1.5 rounded-lg text-[11px] font-black tracking-wider border transition">🔥 ПАЛАЧ · Тяжёлый</button>
+            <button data-style="phantom" class="style-choice px-3 py-1.5 rounded-lg text-[11px] font-black tracking-wider border transition">💨 ПРИЗРАК · 3 рывка</button>
+          </div>
+          <div id="style-desc-line" class="text-[10px] sm:text-[11px] text-zinc-400 text-center mt-1.5 px-2"></div>
         </div>
 
         <!-- Bosses Grid (Dynamic from BOSS_REGISTRY) -->
@@ -421,6 +440,20 @@
           <button id="btn-contract-back" class="px-4 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-xs font-bold text-zinc-300 transition">← НАЗАД В МЕНЮ</button>
           <button id="btn-contract-skip" class="px-5 py-2.5 rounded-lg bg-rose-800 hover:bg-rose-700 border border-rose-500 text-xs font-black tracking-wider text-white transition">ОТКАЗАТЬСЯ И ВОЙТИ В БОЙ →</button>
         </div>
+      </div>
+    </div>
+
+    <!-- TALISMANS MODAL (2 BUILD SLOTS) -->
+    <div id="talismans-modal" class="scrollable-panel hidden absolute inset-0 z-[45] bg-black/85 backdrop-blur-sm flex items-start sm:items-center justify-center p-4 overflow-y-auto">
+      <div class="w-full max-w-2xl bg-[#0d0508] border-2 border-emerald-800/90 rounded-2xl p-5 sm:p-6 shadow-2xl">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <div class="text-[10px] font-black tracking-[0.35em] text-emerald-400 uppercase">НАСТРОЙКА БИЛДА · ДО 2 СЛОТОВ</div>
+            <h2 class="font-serif-noir text-2xl font-black text-zinc-100 tracking-widest">💍 ТАЛИСМАНЫ</h2>
+          </div>
+          <button id="btn-talismans-close" class="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-xs font-bold text-zinc-300">✕ ЗАКРЫТЬ</button>
+        </div>
+        <div id="talismans-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
       </div>
     </div>
 
@@ -503,6 +536,7 @@
           <button data-filter="all" class="ach-filter-btn px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-500 text-black">ВСЕ</button>
           <button data-filter="boss" class="ach-filter-btn px-2.5 py-1 rounded-lg text-[11px] font-bold bg-zinc-900 text-zinc-300 border border-zinc-700">БОССЫ</button>
           <button data-filter="style" class="ach-filter-btn px-2.5 py-1 rounded-lg text-[11px] font-bold bg-zinc-900 text-zinc-300 border border-zinc-700">СТИЛЬ И МАСТЕРСТВО</button>
+          <button data-filter="fun" class="ach-filter-btn px-2.5 py-1 rounded-lg text-[11px] font-bold bg-zinc-900 text-zinc-300 border border-zinc-700">ФАН И СОБЫТИЯ</button>
           <button data-filter="unlocked" class="ach-filter-btn px-2.5 py-1 rounded-lg text-[11px] font-bold bg-zinc-900 text-zinc-300 border border-zinc-700">ОТКРЫТЫЕ</button>
         </div>
 
@@ -701,6 +735,25 @@
     // =========================================================================
     // PERSISTENT SAVE SYSTEM
     // =========================================================================
+    const STYLES_DATA = {
+      ronin:       { id: 'ronin',       name: '⚔️ РОНИН',   desc: 'Сбалансированный стиль: быстрое комбо, Кровавая Волна на 3-м ударе, 2 заряда рывка.', speedMult: 1, cdMult: 1, dmgMult: 1, reachBonus: 0, postureMult: 1, maxDashes: 2 },
+      executioner: { id: 'executioner', name: '🔥 ПАЛАЧ',   desc: 'Тяжёлые удары (+35% урона, +28 дальность, +65% к слому концентрации), но медленнее замах.', speedMult: 0.94, cdMult: 1.28, dmgMult: 1.35, reachBonus: 28, postureMult: 1.65, maxDashes: 2 },
+      phantom:     { id: 'phantom',     name: '💨 ПРИЗРАК', desc: '3 заряда рывка, +12% скорости и быстрые удары. После Идеального Уворота — ТЕНЕВОЙ КРИТ ×2.5!', speedMult: 1.12, cdMult: 0.82, dmgMult: 0.86, reachBonus: -4, postureMult: 0.9, maxDashes: 3 }
+    };
+    let activeStyleId = 'ronin';
+    function getActiveStyle() { return STYLES_DATA[activeStyleId] || STYLES_DATA.ronin; }
+
+    const TALISMANS_DATA = [
+      { id: 'parry_ring',       icon: '💍', name: 'Печать Парирования', desc: 'Окно парирования шире на +0.06 сек, но урон катаны -10%.' },
+      { id: 'blood_chalice',    icon: '🍷', name: 'Чаша Жадности',      desc: '+35% к накоплению Крови 🩸 со всех атак и парирований.' },
+      { id: 'stamina_feather',  icon: '🪶', name: 'Перо Ветра',         desc: 'Выносливость восстанавливается на +35% быстрее.' },
+      { id: 'executioner_seal', icon: '💀', name: 'Знак Палача',        desc: 'Урон от смертельной Казни и Клинкового Клэша +30%.' },
+      { id: 'flame_step',       icon: '🔥', name: 'Огненный Шаг',       desc: 'Каждый рывок выпускает огненную вспышку вокруг героя (24 урона боссу).' },
+      { id: 'extra_flask',      icon: '🧪', name: 'Пояс Алхимика',      desc: '+1 Фляга Крови (3 вместо 2) и питьё быстрее на 25%.' }
+    ];
+    let equippedTalismans = [];
+    function hasTalisman(id) { return equippedTalismans.includes(id); }
+
     let unlockedBosses = 1;
     let unlockAllToggle = false;
     let bossRecords = {};
@@ -752,6 +805,8 @@
         unlockAllToggle,
         unlockedSkins,
         activeSkinId,
+        activeStyleId,
+        equippedTalismans,
         pantheonBest,
         pantheonBestTime,
         records: bossRecords,
@@ -776,6 +831,12 @@
       }
       if (typeof parsed.activeSkinId === 'string' && unlockedSkins[parsed.activeSkinId]) {
         activeSkinId = parsed.activeSkinId;
+      }
+      if (typeof parsed.activeStyleId === 'string' && STYLES_DATA[parsed.activeStyleId]) {
+        activeStyleId = parsed.activeStyleId;
+      }
+      if (Array.isArray(parsed.equippedTalismans)) {
+        equippedTalismans = parsed.equippedTalismans.filter(id => TALISMANS_DATA.some(t => t.id === id)).slice(0, 2);
       }
       if (typeof parsed.pantheonBest === 'number') pantheonBest = parsed.pantheonBest;
       if (typeof parsed.pantheonBestTime === 'number' || parsed.pantheonBestTime === null) pantheonBestTime = parsed.pantheonBestTime;
@@ -1495,7 +1556,8 @@
         this.hp = this.maxHp;
         this.dead = false;
         this.angle = 0;
-        this.baseSpeed = 240;
+        const st = getActiveStyle();
+        this.baseSpeed = Math.round(240 * st.speedMult);
 
         this.blood = 0;
         this.maxBlood = 100;
@@ -1508,8 +1570,13 @@
         this.parryTimer = 0;
         this.parryCd = 0;
         this.rageTimer = 0;
+        this.phantomCrit = false;
 
-        this.dashCharges = 2;
+        this.maxDashes = st.maxDashes || 2;
+        this.dashCharges = this.maxDashes;
+        this.maxFlasks = activeContract === 'blind_blade' ? 0 : (hasTalisman('extra_flask') ? 3 : 2);
+        this.flasks = this.maxFlasks;
+        this.healTimer = 0;
         this.dashRecharge = 0;
         this.dashTimer = 0;
         this.dashVx = 0;
@@ -1528,7 +1595,8 @@
       }
 
       addBlood(amount) {
-        this.blood = Math.min(this.maxBlood, this.blood + amount);
+        const mult = hasTalisman('blood_chalice') ? 1.35 : 1;
+        this.blood = Math.min(this.maxBlood, this.blood + Math.round(amount * mult));
       }
 
       getIaidoCost() {
@@ -1563,6 +1631,7 @@
             audio.playTone(210, 85, 0.18, 'sawtooth', 0.14);
             screenShake = Math.max(screenShake, 6);
             spawnParticles(this.x, this.y, '#e11d48', 12, 170, 3.5, 0.28);
+            if (typeof achOnDebtMiss === 'function') achOnDebtMiss();
             spawnFloatingText(this.x, this.y - 30, '🩸 ДОЛГ: ПРОМАХ ПАРИРОВАНИЯ! -45⚡ -20🩸', '#fb7185', 13);
           }
         }
@@ -1571,6 +1640,18 @@
         if (this.iaidoCd > 0) this.iaidoCd -= dt;
         if (this.invuln > 0) this.invuln -= dt;
         if (this.speedBoost > 0) this.speedBoost -= dt;
+        if (this.healTimer > 0) {
+          this.healTimer -= dt;
+          if (Math.random() < 0.35) spawnParticles(this.x, this.y, '#34d399', 1, 50, 3.5, 0.25);
+          if (this.healTimer <= 0) {
+            this.flasks = Math.max(0, this.flasks - 1);
+            this.hp = Math.min(this.maxHp, this.hp + 1);
+            audio.playTone(440, 880, 0.2, 'sine', 0.16);
+            spawnParticles(this.x, this.y, '#34d399', 22, 220, 4.5, 0.45);
+            if (typeof spawnHitFlash3D === 'function') spawnHitFlash3D(this.x, this.y, '#34d399', 1.6, 0.3);
+            spawnFloatingText(this.x, this.y - 34, '🧪 ФЛЯГА: +1 HP!', '#4ade80', 17);
+          }
+        }
 
         if (this.dualBladeTimer > 0) {
           this.dualBladeTimer -= dt;
@@ -1580,8 +1661,8 @@
           }
         }
 
-        // Recharge 2 dash charges
-        if (this.dashCharges < 2) {
+        // Recharge dash charges
+        if (this.dashCharges < this.maxDashes) {
           this.dashRecharge += dt;
           if (this.dashRecharge >= 1.55) {
             this.dashRecharge = 0;
@@ -1589,6 +1670,7 @@
           }
         }
 
+        const prevX = this.x, prevY = this.y;
         // Movement
         if (this.dashTimer > 0) {
           this.dashTimer -= dt;
@@ -1599,10 +1681,12 @@
             spawnParticles(this.x, this.y, skin.glow, 1, 40, 4, 0.22);
           }
         } else {
-          const spd = this.baseSpeed * (this.speedBoost > 0 ? 1.32 : 1) * (this.dualBladeTimer > 0 ? 1.12 : 1) * (this.slowMul || 1);
+          const spd = this.baseSpeed * (this.speedBoost > 0 ? 1.32 : 1) * (this.dualBladeTimer > 0 ? 1.12 : 1) * (this.slowMul || 1) * (this.healTimer > 0 ? 0.45 : 1);
           this.x += input.mx * spd * dt;
           this.y += input.my * spd * dt;
         }
+        this.vx = dt > 0 ? (this.x - prevX) / dt : 0;
+        this.vy = dt > 0 ? (this.y - prevY) / dt : 0;
 
         if (clampToArena(this, this.radius + 2) && Math.random() < 0.35) {
           spawnParticles(this.x, this.y, '#ff1744', 2, 90, 3, 0.2);
@@ -1640,6 +1724,7 @@
 
       triggerAttack() {
         if (this.dead) return;
+        if (this.healTimer > 0) return;
         if (clashState) { resolveClashWin(); return; }
         if (this.attackCd > 0) return;
 
@@ -1653,8 +1738,9 @@
         }
 
         if (!spendStamina(this, this.comboStep === 2 ? 'finisher' : 'attack')) return;
+        const st = getActiveStyle();
         const isDual = this.dualBladeTimer > 0;
-        this.attackCd = isDual ? 0.11 : 0.22;
+        this.attackCd = (isDual ? 0.11 : 0.22) * st.cdMult;
         this.swingAnim = 0.16;
         this.comboReset = 0.65;
         const step = this.comboStep;
@@ -1666,9 +1752,16 @@
         clampToArena(this, this.radius + 2);
 
         const isRage = this.rageTimer > 0;
-        const mult = (isRage ? 2 : 1) * (isDual ? 1.25 : 1);
-        const reach = step === 2 ? 96 : 84;
+        const isCrit = !!this.phantomCrit;
+        this.phantomCrit = false;
+        const mult = (isRage ? 2 : 1) * (isDual ? 1.25 : 1) * st.dmgMult * (isCrit ? 2.5 : 1) * (hasTalisman('parry_ring') ? 0.9 : 1);
+        const reach = (step === 2 ? 96 : 84) + st.reachBonus;
         const dmg = Math.round((step === 2 ? 32 : 20) * mult);
+        const postAmt = Math.round((step === 2 ? 22 : 12) * st.postureMult);
+        if (isCrit) {
+          if (typeof achOnPhantomCrit === 'function') achOnPhantomCrit();
+          spawnFloatingText(this.x, this.y - 34, '⚡ ТЕНЕВОЙ КРИТ ×2.5!', '#22d3ee', 16);
+        }
 
         const skin = getActiveSkin();
         audio.slash(step);
@@ -1701,7 +1794,7 @@
                 return;
               }
               if (typeof achSetDamageSource === 'function') achSetDamageSource('melee');
-              damageBossTarget(target, dmg, isTwin2, true, step === 2 ? 22 : 12);
+              damageBossTarget(target, dmg, isTwin2, true, postAmt);
               this.addBlood(step === 2 ? 20 : 14);
               if (isDual) {
                 this.dualBladeHits++;
@@ -1732,11 +1825,12 @@
 
       triggerParry() {
         if (this.dead) return;
+        if (this.healTimer > 0) return;
         if (clashState) { resolveClashWin(); return; }
         if (this.parryCd > 0) return;
         if (!spendStamina(this, 'parry')) return;
         this.parrySuccess = false;
-        this.parryTimer = activeContract === 'blood_debt' ? 0.20 : 0.24;
+        this.parryTimer = (activeContract === 'blood_debt' ? 0.20 : 0.24) + (hasTalisman('parry_ring') ? 0.06 : 0);
         this.parryCd = 0.55;
         audio.playTone(620, 880, 0.08, 'sine', 0.1);
       }
@@ -1744,7 +1838,12 @@
       triggerDash() {
         if (this.dead || this.dashCharges <= 0 || this.dashTimer > 0) return;
         if (!spendStamina(this, 'dash')) return;
+        this.healTimer = 0; // рывок отменяет питьё фляги
         this.dashCharges--;
+        if (hasTalisman('flame_step') && boss && !boss.dead && Math.hypot(boss.x - this.x, boss.y - this.y) <= boss.radius + 90) {
+          spawnParticles(this.x, this.y, '#fb923c', 16, 220, 4.5, 0.35);
+          damageBossTarget(boss, 24, false, true, 10);
+        }
         this.dashTimer = 0.16;
         this.invuln = Math.max(this.invuln, 0.22);
         let dx = input.mx, dy = input.my;
@@ -1764,9 +1863,10 @@
 
       triggerPerfectDodge() {
         audio.perfectDodge();
-        this.dashCharges = Math.min(2, this.dashCharges + 1);
+        this.dashCharges = Math.min(this.maxDashes, this.dashCharges + 1);
         this.iaidoCd = Math.max(0, this.iaidoCd - 1.5);
         this.speedBoost = 1.4;
+        if (activeStyleId === 'phantom') this.phantomCrit = true;
         restoreStamina(this, 30);
         this.addBlood(25);
         if (typeof achOnPerfectDodge === 'function') achOnPerfectDodge();
@@ -1842,8 +1942,23 @@
         }
       }
 
+      triggerFlask() {
+        if (this.dead || this.healTimer > 0 || this.flasks <= 0) return;
+        if (this.hp >= this.maxHp) {
+          spawnFloatingText(this.x, this.y - 26, 'HP ПОЛНОЕ', '#4ade80', 13);
+          return;
+        }
+        this.healTimer = hasTalisman('extra_flask') ? 0.65 : 0.88;
+        audio.playTone(300, 520, 0.16, 'sine', 0.12);
+        spawnFloatingText(this.x, this.y - 28, '🧪 ПЬЁТ ФЛЯГУ...', '#fde047', 14);
+      }
+
       takeDamage(amount = 1) {
         if (this.dead || this.invuln > 0) return;
+        if (this.healTimer > 0) {
+          this.healTimer = 0;
+          spawnFloatingText(this.x, this.y - 38, '🧪 ФЛЯГА СБИТА!', '#fb7185', 14);
+        }
         if (activeContract === 'blood_debt') amount = Math.max(amount, 2);
 
         if (this.dualBladeShield) {
@@ -2082,9 +2197,20 @@
           this.phase2 = true;
           audio.setPhase2(true);
           audio.gong();
-          screenShake = 14;
-          spawnParticles(this.x, this.y, this.color, 34, 300, 5.5, 0.6);
-          spawnFloatingText(this.x, this.y - 52, '🔥 ФАЗА II · ЯРОСТЬ!', '#ff1744', 22);
+          screenShake = 16;
+          invertFlash = 0.09;
+          spawnParticles(this.x, this.y, this.color, 38, 320, 5.5, 0.65);
+          if (typeof spawnHitFlash3D === 'function') spawnHitFlash3D(this.x, this.y, this.color, 3.4, 0.45);
+          spawnFloatingText(this.x, this.y - 52, '🔥 ФАЗА II · ПРОБУЖДЕНИЕ!', '#ff1744', 22);
+          // Мягкая волна отбрасывания игрока (без урона), как переход фазы в Souls
+          if (player && !player.dead) {
+            const dx = player.x - this.x, dy = player.y - this.y, d = Math.hypot(dx, dy) || 1;
+            if (d < 220) {
+              player.x += (dx / d) * (220 - d);
+              player.y += (dy / d) * (220 - d);
+              clampToArena(player, player.radius + 4);
+            }
+          }
         }
 
         if (this.staggerTimer > 0) {
@@ -2177,7 +2303,7 @@
         if (this.windup) {
           this.windup.timer -= dt;
           if (this.windup.timer > 0.15) {
-            this.windup.aimAngle = Math.atan2(player.y - this.y, player.x - this.x);
+            this.windup.aimAngle = this.getLeadAim(this.windup.type === 'sp' ? 580 : 350);
           }
           if (this.windup.timer <= 0) {
             const w = this.windup;
@@ -2187,6 +2313,21 @@
           }
           this.updateTwin2(dt);
           return;
+        }
+
+        // Тактический боковой отскок от летящей в босса Кровавой Волны / отражённого снаряда
+        if (this.evadeCd > 0) this.evadeCd -= dt;
+        else if (this.phase2 || this.id >= 6) {
+          const threat = playerWaves.find(w => Math.hypot(w.x - this.x, w.y - this.y) < 165) ||
+                         projectiles.find(p => p.reflected && Math.hypot(p.x - this.x, p.y - this.y) < 155);
+          if (threat && Math.random() < (this.phase2 ? 0.45 : 0.25)) {
+            this.evadeCd = 3.5;
+            const perp = Math.atan2(threat.vy, threat.vx) + (Math.random() < 0.5 ? Math.PI / 2 : -Math.PI / 2);
+            this.x += Math.cos(perp) * 78;
+            this.y += Math.sin(perp) * 78;
+            clampToArena(this, this.radius + 8);
+            spawnParticles(this.x, this.y, this.color, 10, 150, 3.5, 0.25);
+          }
         }
 
         if (typeof updateBossSig === 'function' && updateBossSig(this, dt)) { this.updateTwin2(dt); return; }
@@ -2263,6 +2404,18 @@
           t2.windup = { timer: 0.36, maxTimer: 0.36, aimAngle: Math.atan2(player.y - t2.y, player.x - t2.x) };
           audio.windup(false);
         }
+      }
+
+      // Умное упреждение: стрельба и рывки на шаг вперёд по движению игрока
+      getLeadAim(projSpd = 350) {
+        if (!player) return 0;
+        const dx = player.x - this.x, dy = player.y - this.y;
+        const dist = Math.hypot(dx, dy) || 1;
+        const leadFactor = Math.min(0.92, (this.phase2 ? 0.78 : 0.50) + this.id * 0.02);
+        const t = Math.min(0.65, dist / Math.max(150, projSpd)) * leadFactor;
+        const px = player.x + (player.vx || 0) * t;
+        const py = player.y + (player.vy || 0) * t;
+        return Math.atan2(py - this.y, px - this.x);
       }
 
       firePrimary(aim) {
@@ -2607,11 +2760,21 @@
 
     function damageBossTarget(target, dmg, isTwin2, addBloodScarFlag, postureAmt) {
       if (!target || target.dead) return;
+      if (!isTwin2 && typeof SIG !== 'undefined' && SIG.altars && SIG.altars.length > 0) {
+        audio.playTone(900, 520, 0.08, 'triangle', 0.1);
+        spawnParticles(target.x, target.y, '#fda4af', 6, 140, 3, 0.22);
+        if (!target._invWarn || totalTime - target._invWarn > 0.55) {
+          target._invWarn = totalTime;
+          spawnFloatingText(target.x, target.y - 46, '🕯️ НЕУЯЗВИМ! СЛОМАЙ АЛТАРИ!', '#fda4af', 14);
+        }
+        return;
+      }
       if (!isTwin2 && target.sigArmor > 0) {
         dmg = Math.max(1, Math.round(dmg * 0.25)); postureAmt = 0;
         if (Math.random() < 0.35) spawnFloatingText(target.x, target.y - 40, '🛡️ БРОНЯ', '#a1a1aa', 13);
       }
       const skin = getActiveSkin();
+      if (typeof ACH !== 'undefined' && ACH.run) ACH.run.dealtDamage = true;
       target.hp -= dmg;
       target.hitFlash = 0.08;
       audio.hit();
@@ -2647,7 +2810,7 @@
     function performExecution(target) {
       const skin = getActiveSkin();
       const exCol = skin.slashFinisher || skin.glow;
-      const dmg = Math.round(target.maxHp * 0.24 * (player.rageTimer > 0 ? 1.35 : 1));
+      const dmg = Math.round(target.maxHp * 0.24 * (player.rageTimer > 0 ? 1.35 : 1) * (hasTalisman('executioner_seal') ? 1.3 : 1));
       player.x = target.x - Math.cos(player.angle) * 26;
       player.y = target.y - Math.sin(player.angle) * 26;
       player.invuln = 0.7;
@@ -2707,7 +2870,7 @@
       if (typeof achSetDamageSource === 'function') achSetDamageSource('clash');
 
       const extraDebt = activeContract === 'blood_debt' ? 0.05 : 0;
-      const dmg = Math.round(boss.maxHp * (0.14 + extraDebt));
+      const dmg = Math.round(boss.maxHp * (0.14 + extraDebt) * (hasTalisman('executioner_seal') ? 1.3 : 1));
       iaidoRifts.push({ x1: cx - 100, y1: cy - 40, x2: cx + 100, y2: cy + 40, col: skin.slashFinisher || skin.glow, core: skin.iaidoCore || '#ffffff', life: 0.5, maxLife: 0.5 });
       if (typeof spawnHitFlash3D === 'function') spawnHitFlash3D(cx, cy, skin.parryColor || skin.glow, 2.2, 0.32);
       spawnFloatingText(cx, cy - 42, `⚡ КЛЭШ РАЗРУБЛЕН! -${dmg}`, skin.slashMain || '#fde047', 22);
@@ -2822,6 +2985,8 @@
 
       initBossSig(boss);
       if (typeof achResetRun === 'function') achResetRun();
+      if (activeStyleId !== 'ronin' && typeof achUnlock === 'function') achUnlock('fun_style_swap', false);
+      if (rec.deaths >= 3 && typeof achUnlock === 'function') achUnlock('fun_stubborn', false);
       if (typeof refreshPlayerSkin3D === 'function') refreshPlayerSkin3D();
       if (typeof resetBladeTrail === 'function') resetBladeTrail();
       FX.cine = null; staminaInit(player);
@@ -2949,10 +3114,15 @@
       document.getElementById('hud-blood-text').textContent = `${Math.floor(player.blood)} / ${player.maxBlood}`;
       document.getElementById('hud-blood-bar').style.width = `${(player.blood / player.maxBlood) * 100}%`;
 
-      const dStr = '⚡'.repeat(player.dashCharges) + '·'.repeat(2 - player.dashCharges);
-      document.getElementById('hud-dashes').textContent = `РЫВОК: ${dStr}`;
+      const dStr = '⚡'.repeat(player.dashCharges) + '·'.repeat(Math.max(0, (player.maxDashes || 2) - player.dashCharges));
+      const fStr = player.maxFlasks > 0 ? ` · 🧪 ${player.flasks}/${player.maxFlasks} (R)` : '';
+      document.getElementById('hud-dashes').textContent = `РЫВОК: ${dStr}${fStr}`;
       const td = document.getElementById('tbtn-dash-charges');
       if (td) td.textContent = dStr;
+      const tf = document.getElementById('tbtn-flask-count');
+      if (tf) tf.textContent = `${player.flasks}`;
+      const tFlaskBtn = document.getElementById('tbtn-flask');
+      if (tFlaskBtn) tFlaskBtn.style.opacity = (player.flasks > 0 && player.hp < player.maxHp) ? '1' : '0.4';
       const tDashBtn = document.getElementById('tbtn-dash');
       if (tDashBtn) tDashBtn.style.opacity = player.dashCharges > 0 ? '1' : '0.45';
       const tIaidoBtn = document.getElementById('tbtn-iaido');
@@ -3027,6 +3197,7 @@
         }
       } else {
         runTimer += dt;
+        if (typeof achTickFight === 'function') achTickFight(runTimer);
       }
 
       let kx = 0, ky = 0;
@@ -3058,6 +3229,7 @@
             player.dualBladeHits = 0;
             player.addBlood(25);
             audio.corpsePull();
+            if (typeof achOnCorpsePull === 'function') achOnCorpsePull();
             screenShake = 8;
             spawnParticles(c.x, c.y, '#ff1744', 22, 220, 4, 0.45);
             spawnFloatingText(c.x, c.y - 28, '⚔️ ДВОЙНЫЕ КЛИНКИ + ЩИТ!', '#f472b6', 16);
@@ -3579,13 +3751,67 @@
       document.getElementById('save-modal').classList.remove('hidden');
     }
 
+    function updateStyleUI() {
+      const st = getActiveStyle();
+      document.querySelectorAll('.style-choice').forEach(btn => {
+        const active = btn.dataset.style === activeStyleId;
+        btn.className = `style-choice px-3 py-1.5 rounded-lg text-[11px] font-black tracking-wider border transition ${
+          active ? 'bg-rose-700/90 border-amber-400 text-white shadow-[0_0_14px_rgba(225,29,72,0.5)]' : 'bg-zinc-950/90 hover:bg-zinc-900 border-zinc-700 text-zinc-400'
+        }`;
+      });
+      const desc = document.getElementById('style-desc-line');
+      if (desc) desc.textContent = st.desc;
+    }
+
+    function updateTalismansButton() {
+      const btn = document.getElementById('btn-talismans');
+      if (btn) btn.textContent = `💍 ТАЛИСМАНЫ (${equippedTalismans.length}/2)`;
+    }
+
+    function openTalismansModal() {
+      const grid = document.getElementById('talismans-grid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      TALISMANS_DATA.forEach(t => {
+        const eq = hasTalisman(t.id);
+        const card = document.createElement('button');
+        card.className = `text-left p-3.5 rounded-xl border transition flex items-start gap-3 ${
+          eq ? 'bg-emerald-950/50 border-emerald-400 shadow-[0_0_16px_rgba(16,185,129,0.25)]' : 'bg-zinc-950/90 hover:bg-zinc-900 border-zinc-800'
+        }`;
+        card.innerHTML = `
+          <div class="w-10 h-10 shrink-0 rounded-lg bg-zinc-900 border ${eq ? 'border-emerald-400' : 'border-zinc-700'} flex items-center justify-center text-xl">${t.icon}</div>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center justify-between gap-2">
+              <div class="font-serif-noir text-xs sm:text-sm font-black ${eq ? 'text-emerald-200' : 'text-zinc-200'}">${t.name}</div>
+              <span class="text-[10px] font-black px-1.5 py-0.5 rounded ${eq ? 'bg-emerald-500 text-black' : 'bg-zinc-900 text-zinc-500'}">${eq ? '✓ НАДЕТО' : 'НАДЕТЬ'}</span>
+            </div>
+            <p class="text-[11px] text-zinc-400 mt-1 leading-snug">${t.desc}</p>
+          </div>
+        `;
+        card.addEventListener('click', () => {
+          if (eq) equippedTalismans = equippedTalismans.filter(id => id !== t.id);
+          else {
+            if (equippedTalismans.length >= 2) equippedTalismans.shift();
+            equippedTalismans.push(t.id);
+          }
+          updateTalismansButton();
+          saveProgress();
+          openTalismansModal();
+        });
+        grid.appendChild(card);
+      });
+      document.getElementById('talismans-modal').classList.remove('hidden');
+    }
+
     function updateMenuUI() {
       document.getElementById('chk-unlock-all').checked = unlockAllToggle;
       audio.updateTrackUI();
       if (typeof achSyncWithRecords === 'function') achSyncWithRecords(true);
       updateArmoryButton();
+      updateTalismansButton();
       if (typeof updateAchievementsButton === 'function') updateAchievementsButton();
       updatePantheonButton();
+      updateStyleUI();
       applyPerfMode();
       renderBossGrid();
     }
@@ -3652,6 +3878,7 @@
         if (e.code === 'KeyK' || e.code === 'Space') { e.preventDefault(); player.triggerParry(); }
         if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') player.triggerDash();
         if (e.code === 'KeyQ' || e.code === 'KeyE' || e.code === 'KeyL') player.triggerSpecial();
+        if (e.code === 'KeyR' || e.code === 'KeyF') player.triggerFlask();
       });
 
       window.addEventListener('keyup', e => { input.keys[e.code] = false; });
@@ -3734,6 +3961,7 @@
       bindTouchBtn('tbtn-parry', () => player.triggerParry());
       bindTouchBtn('tbtn-dash', () => player.triggerDash());
       bindTouchBtn('tbtn-iaido', () => player.triggerSpecial());
+      bindTouchBtn('tbtn-flask', () => player.triggerFlask());
 
       document.getElementById('btn-pantheon').addEventListener('click', () => {
         pantheonTotalTime = 0;
@@ -3741,6 +3969,11 @@
         startFight(0, null, true);
       });
       document.getElementById('btn-armory').addEventListener('click', openArmory);
+      document.getElementById('btn-talismans').addEventListener('click', openTalismansModal);
+      document.getElementById('btn-talismans-close').addEventListener('click', () => document.getElementById('talismans-modal').classList.add('hidden'));
+      document.getElementById('talismans-modal').addEventListener('click', e => {
+        if (e.target.id === 'talismans-modal') document.getElementById('talismans-modal').classList.add('hidden');
+      });
       document.getElementById('btn-armory-close').addEventListener('click', () => document.getElementById('armory-modal').classList.add('hidden'));
       document.getElementById('armory-modal').addEventListener('click', e => {
         if (e.target.id === 'armory-modal') document.getElementById('armory-modal').classList.add('hidden');
@@ -3767,10 +4000,17 @@
       document.getElementById('btn-music-toggle').addEventListener('click', () => audio.toggleMusic());
       document.getElementById('hud-btn-music').addEventListener('click', () => audio.toggleMusic());
       document.getElementById('hud-btn-pause').addEventListener('click', togglePause);
-      document.getElementById('btn-track-switch').addEventListener('click', () => audio.switchTrack());
+      document.getElementById('btn-track-switch').addEventListener('click', () => { audio.switchTrack(); if (typeof achOnMusicChange === 'function') achOnMusicChange(); });
 
       document.getElementById('custom-mp3-input').addEventListener('change', e => {
-        if (e.target.files && e.target.files[0]) audio.loadCustomTrack(e.target.files[0]);
+        if (e.target.files && e.target.files[0]) { audio.loadCustomTrack(e.target.files[0]); if (typeof achOnMusicChange === 'function') achOnMusicChange(); }
+      });
+      document.querySelectorAll('.style-choice').forEach(btn => {
+        btn.addEventListener('click', () => {
+          activeStyleId = btn.dataset.style;
+          updateStyleUI();
+          saveProgress();
+        });
       });
       document.getElementById('chk-unlock-all').addEventListener('change', e => {
         unlockAllToggle = e.target.checked;

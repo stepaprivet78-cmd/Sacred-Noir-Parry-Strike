@@ -84,7 +84,8 @@ registerBoss({
   epithet: 'Древний Идол',
   color: '#e11d48',
   stats: { baseHp: 420, speed: 120, atkRate: 1.45, spRate: 4.5, radius: 30, desiredDist: 185, projShape: 'orb' },
-  signature: { type: 'armor', name: '🛡️ КАМЕННАЯ КОЖА', hint: 'Урон ×0.25 — ломай ПАРИРОВАНИЕМ!', col: '#a1a1aa', cast: 0.6 },
+  signature: { type: 'altars', name: '🕯️ АЛТАРИ КРОВИ', hint: 'Босс НЕУЯЗВИМ и лечится — разруби алтари катаной!', col: '#f43f5e', cast: 0.75 },
+  altSignature: 'armor',
   achievement: { id: 'boss_monolith', title: 'Крушитель Идолов', desc: 'Низвергнуть I. Монолита («Древний Идол»)', icon: '🗿' },
   fireSpecial(b, aim) {
     if (b.phase2 && Math.random() < 0.55) b.startDash(aim);
@@ -137,6 +138,7 @@ registerBoss({
   color: '#06b6d4',
   stats: { baseHp: 600, speed: 135, atkRate: 1.25, spRate: 4.4, radius: 30, desiredDist: 260, projShape: 'orb' },
   signature: { type: 'prism', name: '💎 КРИСТАЛЬНЫЕ ПИЛОНЫ', hint: 'Разбей кристаллы катаной!', col: '#06b6d4', cast: 0.8 },
+  altSignature: 'safezone',
   achievement: { id: 'boss_prism', title: 'Осколки Серафима', desc: 'Низвергнуть III. Призму («Кристальный Серафим»)', icon: '💎' },
   fireSpecial(b, aim) {
     const count = b.phase2 ? 3 : 2;
@@ -453,6 +455,7 @@ registerBoss({
   color: '#fb7185',
   stats: { baseHp: 1750, speed: 180, atkRate: 0.88, spRate: 3.2, radius: 35, desiredDist: 205, projShape: 'orb', projSpread: 0.22 },
   signature: { type: 'judgement', name: '⚔️ ПРИГОВОР НЕБЕС', hint: 'Карающие мечи бьют с небес волнами — не стой на месте!', col: '#fb7185', cast: 0.9 },
+  altSignature: 'altars',
   achievement: { id: 'boss_archon', title: 'Свержение Судьи', desc: 'Низвергнуть XII. Архонта («Судья Кровавой Клятвы»)', icon: '⚔️' },
   fireSpecial(b, aim) {
     if (Math.random() < 0.5) {
@@ -491,6 +494,190 @@ registerBoss({
         s.position.set(Math.cos(a) * 2.25, 2.7 + Math.sin(t * 3 + i) * 0.3, Math.sin(a) * 2.25);
         s.rotation.set(Math.sin(t * 2 + i) * 0.2, -a, 0.18);
       });
+    };
+  }
+});
+
+// =========================================================================
+// XIII — XX: ВЫСШИЙ ПАНТЕОН БЕЗДНЫ (УМНЫЙ ИИ + НОВЫЕ МЕХАНИКИ)
+// =========================================================================
+
+// XIII. МОРОЗ — Ледяной Палач
+registerBoss({
+  key: 'frost', name: 'МОРОЗ', epithet: 'Ледяной Палач', color: '#67e8f9',
+  stats: { baseHp: 1850, speed: 175, atkRate: 0.90, spRate: 3.3, radius: 33, desiredDist: 205, projShape: 'blade', projSpread: 0.22 },
+  signature: { type: 'frostfield', name: '❄️ ЛЕДЯНОЕ ПОЛЕ', hint: 'Лёд сковывает движения — уходи с замёрзших зон!', col: '#67e8f9', cast: 0.75 },
+  altSignature: 'safezone',
+  achievement: { id: 'boss_frost', title: 'Оттепель', desc: 'Низвергнуть XIII. Мороза («Ледяной Палач»)', icon: '❄️' },
+  fireSpecial(b, aim) { b.spawnFloorBlades('cross'); b.startDash(aim); },
+  build3D({ A, M, glow, white, stdMat }) {
+    const ice = stdMat('#083344', { metalness: 0.4, roughness: 0.15, emissive: '#06b6d4', emissiveIntensity: 0.25 });
+    A(M(new THREE.OctahedronGeometry(1.5), ice), 0, 2.2, 0);
+    const spikes = [];
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2;
+      const s = A(M(new THREE.ConeGeometry(0.22, 1.5, 5), glow), Math.cos(a) * 1.6, 2.6, Math.sin(a) * 1.6);
+      s.rotation.z = -Math.cos(a) * 0.4; s.rotation.x = Math.sin(a) * 0.4;
+      spikes.push(s);
+    }
+    A(M(new THREE.SphereGeometry(0.42, 12, 10), white), 0.9, 2.4, 0);
+    return t => { spikes.forEach((s, i) => { s.position.y = 2.5 + Math.sin(t * 3 + i) * 0.25; }); };
+  }
+});
+
+// XIV. ПЕПЕЛ — Инквизитор Костра
+registerBoss({
+  key: 'cinder', name: 'ПЕПЕЛ', epithet: 'Инквизитор Костра', color: '#fb923c',
+  stats: { baseHp: 1960, speed: 185, atkRate: 0.88, spRate: 3.2, radius: 34, desiredDist: 185, projShape: 'orb', projSpread: 0.24 },
+  signature: { type: 'firestorm', name: '🔥 ОГНЕННЫЙ ШТОРМ', hint: 'Пылающие костры и волна огня — прыгай рывком!', col: '#fb923c', cast: 0.8 },
+  altSignature: 'quake',
+  achievement: { id: 'boss_cinder', title: 'Погашенный Костёр', desc: 'Низвергнуть XIV. Пепла («Инквизитор Костра»)', icon: '🔥' },
+  fireSpecial(b, aim) { b.startCrushingJump(); b.spawnFloorBlades('line'); },
+  build3D({ A, M, shell, glow, glowSprite }) {
+    A(M(new THREE.CylinderGeometry(0.85, 1.35, 3.0, 8), shell), 0, 1.5, 0);
+    const halo = A(M(new THREE.TorusGeometry(1.5, 0.1, 6, 32), glow), 0, 3.2, 0);
+    A(glowSprite('#fb923c', 4.5, 0.65), 0, 3.1, 0);
+    return t => { halo.rotation.set(Math.sin(t * 2) * 0.5, t * 2, 0); };
+  }
+});
+
+// XV. МРАК — Пожиратель Света
+registerBoss({
+  key: 'umbra', name: 'МРАК', epithet: 'Пожиратель Света', color: '#818cf8',
+  stats: { baseHp: 2050, speed: 195, atkRate: 0.86, spRate: 3.1, radius: 32, desiredDist: 190, projShape: 'blade', projSpread: 0.24 },
+  signature: { type: 'blackout', name: '🌑 ЗАТМЕНИЕ ЗРЕНИЯ', hint: 'Тьма окутала арену — следи за вспышками!', col: '#818cf8', cast: 0.7 },
+  altSignature: 'mirror',
+  achievement: { id: 'boss_umbra', title: 'Прозрение во Тьме', desc: 'Низвергнуть XV. Мрака («Пожиратель Света»)', icon: '🌑' },
+  fireSpecial(b, aim) {
+    b.x = player.x - Math.cos(player.angle) * 140; b.y = player.y - Math.sin(player.angle) * 140;
+    clampToArena(b, b.radius + 10);
+    b.startDash(Math.atan2(player.y - b.y, player.x - b.x));
+  },
+  build3D({ A, M, glow, white, stdMat }) {
+    A(M(new THREE.SphereGeometry(1.35, 20, 16), stdMat('#090514', { roughness: 0.2, metalness: 0.8 })), 0, 2.3, 0);
+    const eyes = A(new THREE.Group(), 0, 2.3, 0);
+    for (let i = 0; i < 3; i++) {
+      const a = (i / 3) * Math.PI * 2;
+      const e = M(new THREE.SphereGeometry(0.28, 12, 10), i === 0 ? white : glow);
+      e.position.set(Math.cos(a) * 1.9, Math.sin(a) * 0.4, Math.sin(a) * 1.9);
+      eyes.add(e);
+    }
+    return t => { eyes.rotation.y = t * 2.2; };
+  }
+});
+
+// XVI. ШТОРМ — Громовержец
+registerBoss({
+  key: 'storm', name: 'ШТОРМ', epithet: 'Громовержец', color: '#facc15',
+  stats: { baseHp: 2150, speed: 190, atkRate: 0.84, spRate: 3.1, radius: 33, desiredDist: 220, projShape: 'blade', projSpread: 0.26 },
+  signature: { type: 'lightning', name: '🌩️ РАЗРЯД МОЛНИЙ', hint: 'Молнии бьют с небес по отмеченным точкам!', col: '#facc15', cast: 0.7 },
+  altSignature: 'judgement',
+  achievement: { id: 'boss_storm', title: 'Укротитель Бури', desc: 'Низвергнуть XVI. Шторма («Громовержец»)', icon: '🌩️' },
+  fireSpecial(b, aim) {
+    for (let i = 0; i < 3; i++) b.lasers.push({ angle: aim + (i / 3) * Math.PI * 2, rotSpeed: 1.05, len: 560, life: 1.8, color: '#facc15', dodged: false });
+  },
+  build3D({ A, M, shell, glow, white }) {
+    A(M(new THREE.CylinderGeometry(1.1, 1.1, 2.6, 12), shell), 0, 2.1, 0);
+    const coils = [];
+    for (let i = 0; i < 3; i++) {
+      const r = A(M(new THREE.TorusGeometry(1.5 + i * 0.25, 0.06, 6, 36), glow), 0, 1.3 + i * 0.8, 0);
+      r.rotation.x = Math.PI / 2; coils.push(r);
+    }
+    A(M(new THREE.SphereGeometry(0.5, 14, 10), white), 0, 3.6, 0);
+    return t => { coils.forEach((r, i) => { r.rotation.z = t * (i % 2 ? 2.5 : -2.5); }); };
+  }
+});
+
+// XVII. ФАНТОМ — Тысячеликий
+registerBoss({
+  key: 'phantom_boss', name: 'ФАНТОМ', epithet: 'Тысячеликий', color: '#c084fc',
+  stats: { baseHp: 2250, speed: 200, atkRate: 0.84, spRate: 3.0, radius: 31, desiredDist: 200, projShape: 'orb', projSpread: 0.22 },
+  signature: { type: 'invis', name: '👻 НЕВИДИМОСТЬ', hint: 'Фантом исчез! Следи за следами и сбей его ударом!', col: '#c084fc', cast: 0.6 },
+  altSignature: 'mirrorsplit',
+  achievement: { id: 'boss_phantom', title: 'Без Масок', desc: 'Низвергнуть XVII. Фантома («Тысячеликий»)', icon: '🎭' },
+  fireSpecial(b, aim) { b.startDash(aim); b.spawnFloorBlades('cross'); },
+  build3D({ A, M, glow, white, stdMat }) {
+    A(M(new THREE.ConeGeometry(1.1, 3.2, 8), stdMat('#1e0836', { transparent: true, opacity: 0.8 })), 0, 1.6, 0);
+    const masks = A(new THREE.Group(), 0, 2.9, 0);
+    for (let i = 0; i < 3; i++) {
+      const a = (i / 3) * Math.PI * 2;
+      const m = M(new THREE.BoxGeometry(0.18, 0.85, 0.65), i === 0 ? white : glow);
+      m.position.set(Math.cos(a) * 1.15, 0, Math.sin(a) * 1.15); m.rotation.y = -a;
+      masks.add(m);
+    }
+    return t => { masks.rotation.y = t * 1.6; };
+  }
+});
+
+// XVIII. ЖЕРТВА — Кровавый Алтарь
+registerBoss({
+  key: 'sacrifice', name: 'ЖЕРТВА', epithet: 'Кровавый Алтарь', color: '#e11d48',
+  stats: { baseHp: 2400, speed: 170, atkRate: 0.84, spRate: 3.0, radius: 36, desiredDist: 195, projShape: 'orb', projSpread: 0.25 },
+  signature: { type: 'altars', name: '🕯️ АЛТАРИ КРОВИ', hint: 'Босс НЕУЯЗВИМ и лечится — разруби алтари катаной!', col: '#f43f5e', cast: 0.75 },
+  altSignature: 'mines',
+  achievement: { id: 'boss_sacrifice', title: 'Осквернитель', desc: 'Низвергнуть XVIII. Жертву («Кровавый Алтарь»)', icon: '🩸' },
+  fireSpecial(b, aim) { b.startCrushingJump(); b.spawnFloorBlades('cross'); },
+  build3D({ A, M, shell, glow }) {
+    A(M(new THREE.BoxGeometry(1.4, 3.4, 1.8), shell), 0, 1.8, 0);
+    const r1 = A(M(new THREE.TorusGeometry(2.1, 0.08, 6, 40), glow), 0, 2.0, 0);
+    const r2 = A(M(new THREE.TorusGeometry(2.1, 0.08, 6, 40), glow), 0, 2.0, 0);
+    return t => { r1.rotation.set(t, t * 0.7, 0); r2.rotation.set(-t * 0.8, 0, t); };
+  }
+});
+
+// XIX. ХРОНОС — Владыка Эпох
+registerBoss({
+  key: 'chronos', name: 'ХРОНОС', epithet: 'Владыка Эпох', color: '#34d399',
+  stats: { baseHp: 2550, speed: 190, atkRate: 0.80, spRate: 2.9, radius: 35, desiredDist: 230, projShape: 'blade', projSpread: 0.26 },
+  signature: { type: 'timestop', name: '⏳ ЗАМЕДЛЕНИЕ ВРЕМЕНИ', hint: 'Время замедлено — прорывайся рывком!', col: '#34d399', cast: 0.75 },
+  altSignature: 'rewind',
+  achievement: { id: 'boss_chronos', title: 'Вне Времени', desc: 'Низвергнуть XIX. Хроноса («Владыка Эпох»)', icon: '⌛' },
+  fireSpecial(b) {
+    const spd = 330 * (activeContract === 'double_down' ? 1.4 : 1);
+    for (let i = 0; i < 16; i++) {
+      const a = (i / 16) * Math.PI * 2 + b.animTime;
+      projectiles.push(new Projectile(b.x, b.y, Math.cos(a) * spd, Math.sin(a) * spd, 8, '#34d399', 1, 'blade'));
+    }
+    b.spawnFloorBlades('cross');
+  },
+  build3D({ A, M, shell, glow, white }) {
+    const top = A(M(new THREE.ConeGeometry(1.3, 1.9, 8), shell), 0, 3.1, 0); top.rotation.x = Math.PI;
+    A(M(new THREE.ConeGeometry(1.3, 1.9, 8), shell), 0, 1.2, 0);
+    A(M(new THREE.SphereGeometry(0.45, 14, 12), white), 0, 2.15, 0);
+    const ring = A(M(new THREE.TorusGeometry(2.2, 0.07, 8, 48), glow), 0, 2.15, 0);
+    return t => { ring.rotation.set(Math.PI / 2 + Math.sin(t) * 0.4, t * 1.4, 0); };
+  }
+});
+
+// XX. ОМЕГА — Конец Всякой Плоти
+registerBoss({
+  key: 'omega', name: 'ОМЕГА', epithet: 'Конец Всякой Плоти', color: '#f43f5e',
+  stats: { baseHp: 3100, speed: 205, atkRate: 0.76, spRate: 2.7, radius: 38, desiredDist: 205, projShape: 'blade', projSpread: 0.28 },
+  signature: { type: 'absolute', name: '👑 АБСОЛЮТНЫЙ КОНЕЦ', hint: 'Владеет всеми механиками 20 боссов!', col: '#f43f5e', cast: 0.75 },
+  achievement: { id: 'boss_omega', title: 'Повелитель Нуара', desc: 'Низвергнуть XX. Омегу («Конец Всякой Плоти»)', icon: '👑' },
+  fireSpecial(b, aim) {
+    const r = Math.random();
+    if (r < 0.34) { b.startCrushingJump(); b.spawnFloorBlades('cross'); }
+    else if (r < 0.67) { b.startDash(aim); b.spawnFloorBlades('line'); }
+    else { for (let i = 0; i < 4; i++) b.lasers.push({ angle: aim + (i / 4) * Math.PI * 2, rotSpeed: 1.1, len: 580, life: 2.0, color: '#f43f5e', dodged: false }); }
+  },
+  build3D({ A, M, shell, glow, white, glowMat }) {
+    A(M(new THREE.OctahedronGeometry(1.65), shell), 0, 2.6, 0);
+    A(M(new THREE.SphereGeometry(0.65, 16, 12), white), 1.1, 2.6, 0);
+    const gold = glowMat('#fde047', 2.2);
+    const h1 = A(M(new THREE.TorusGeometry(1.2, 0.07, 8, 40), gold), 0, 4.7, 0); h1.rotation.x = Math.PI / 2;
+    const h2 = A(M(new THREE.TorusGeometry(2.3, 0.05, 8, 48), glow), 0, 2.6, 0);
+    const wings = [];
+    [-1, 1].forEach(s => {
+      for (let w = 0; w < 4; w++) {
+        const piv = A(new THREE.Group(), -0.3, 2.8, s * 1.0);
+        const f = M(new THREE.BoxGeometry(0.55, 0.08, 3.8), w % 2 ? gold : glow); f.position.z = s * 1.9; piv.add(f);
+        wings.push({ piv, s, w });
+      }
+    });
+    return t => {
+      h1.rotation.z = t * 1.5; h2.rotation.set(t, t * 0.8, 0);
+      wings.forEach(W => { W.piv.rotation.x = -W.s * (0.1 + W.w * 0.3 + Math.sin(t * 5 + W.w) * 0.14); });
     };
   }
 });
