@@ -154,9 +154,12 @@
 
     /* Compact menu, HUD & touch controls on short landscape phone screens */
     @media (max-height: 500px) {
-      #main-menu { padding: 8px 14px !important; }
-      #main-menu h1 { font-size: 1.5rem !important; line-height: 1.08 !important; }
-      #main-menu .menu-col { gap: 0.45rem !important; padding-top: 2px !important; padding-bottom: 14px !important; }
+      #main-menu { padding: 6px 12px !important; }
+      #main-menu .menu-col { gap: 0.35rem !important; padding-top: 0 !important; padding-bottom: 0 !important; }
+      #main-menu #btn-open-bosses { padding-top: 0.45rem !important; padding-bottom: 0.45rem !important; }
+      #main-menu #btn-tower, #main-menu #btn-pantheon { padding-top: 0.38rem !important; padding-bottom: 0.38rem !important; }
+      #main-menu .style-box { padding: 0.45rem 0.6rem !important; }
+      #main-menu .nav-2x2 button { padding-top: 0.38rem !important; padding-bottom: 0.38rem !important; }
       #hud { padding: 6px 10px !important; }
     }
     @media (max-height: 440px) {
@@ -169,6 +172,31 @@
         transform: scale(0.82);
         transform-origin: bottom right;
         bottom: calc(14px + env(safe-area-inset-bottom, 0px)) !important;
+      }
+    }
+
+    /* Split-view right side panel on wide screens (desktop & landscape phone) */
+    @media (min-width: 640px) {
+      .menu-side-panel {
+        left: 348px !important;
+        background: transparent !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        pointer-events: none !important;
+        justify-content: flex-end !important;
+        padding: 12px 16px 12px 8px !important;
+      }
+      .menu-side-panel .side-panel-card {
+        pointer-events: auto !important;
+        background: rgba(13, 5, 8, 0.86) !important;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+      }
+    }
+    @media (min-width: 960px) {
+      .menu-side-panel {
+        left: 410px !important;
+        padding: 20px 28px 20px 12px !important;
       }
     }
 
@@ -333,21 +361,21 @@
     </div>
 
     <!-- MAIN MENU (MINIMALIST SOULS-STYLE OVER LIVE 3D ARENA) -->
-    <div id="main-menu" class="scrollable-panel absolute inset-0 z-30 flex items-start justify-center sm:justify-start overflow-y-auto bg-gradient-to-r from-[#070205]/95 via-[#070205]/65 sm:via-[#070205]/45 to-[#070205]/25 sm:to-transparent p-4 sm:p-8 md:pl-14">
+    <div id="main-menu" class="scrollable-panel absolute inset-0 z-30 flex items-start justify-center sm:justify-start overflow-y-auto bg-gradient-to-r from-[#070205]/95 via-[#070205]/55 sm:via-[#070205]/35 to-transparent p-3 sm:p-6 md:pl-12">
       <div class="fixed inset-0 blood-vignette pointer-events-none"></div>
 
-      <div class="menu-col relative z-10 w-full max-w-sm flex flex-col gap-3.5 py-2 pb-8 my-auto">
-        <!-- Title Header -->
-        <div class="text-center sm:text-left">
-          <div class="text-[10px] font-black tracking-[0.42em] text-rose-500/90 uppercase mb-1">
-            3D BOSS RUSH · PARRY &amp; STRIKE
-          </div>
-          <h1 class="font-serif-noir text-3xl sm:text-4xl md:text-5xl font-black tracking-[0.14em] text-zinc-100 title-glow leading-tight">
-            САКРАЛЬНЫЙ НУАР
-          </h1>
-          <div class="w-44 sm:w-56 h-[2px] mx-auto sm:mx-0 mt-2.5 bg-gradient-to-r from-rose-600 via-rose-500/50 to-transparent"></div>
+      <!-- Floating Title in Top-Right over 3D Arena (visible when no side panel is open) -->
+      <div id="menu-floating-title" class="hidden sm:block pointer-events-none absolute top-5 right-7 text-right z-[5] transition-opacity duration-200">
+        <div class="text-[9px] font-black tracking-[0.42em] text-rose-500/85 uppercase mb-0.5">
+          3D BOSS RUSH · PARRY &amp; STRIKE
         </div>
+        <h1 class="font-serif-noir text-2xl md:text-4xl font-black tracking-[0.16em] text-zinc-100/95 title-glow leading-tight">
+          САКРАЛЬНЫЙ НУАР
+        </h1>
+        <div class="w-40 md:w-52 h-[2px] ml-auto mt-1.5 bg-gradient-to-l from-rose-600 via-rose-500/50 to-transparent"></div>
+      </div>
 
+      <div class="menu-col relative z-10 w-full max-w-[330px] flex flex-col gap-2.5 py-1 my-auto">
         <!-- Primary Modes -->
         <div class="flex flex-col gap-2">
           <button id="btn-open-bosses" class="w-full px-4 py-3 bg-gradient-to-r from-rose-900/95 via-red-800/90 to-rose-950/90 hover:from-rose-700 hover:to-red-800 border border-rose-400/80 rounded-xl text-left flex items-center justify-between shadow-[0_0_24px_rgba(225,29,72,0.4)] transition group">
@@ -363,33 +391,33 @@
           </button>
 
           <button id="btn-pantheon" class="w-full px-4 py-2.5 bg-zinc-950/85 hover:bg-amber-950/60 border border-amber-500/60 rounded-xl text-xs font-black tracking-wider text-amber-200 shadow-md transition text-left">
-            ⚔️ ПАНТЕОН (20 ПОДРЯД) · 0/20
+            ⚔️ ПАНТЕОН (30 ПОДРЯД) · 0/30
           </button>
         </div>
 
         <!-- Combat Style Compact Selector (Live 3D Weapon Preview!) -->
-        <div class="p-3 rounded-xl bg-zinc-950/80 border border-zinc-800/90 backdrop-blur-sm">
+        <div class="style-box p-2.5 rounded-xl bg-zinc-950/80 border border-zinc-800/90 backdrop-blur-sm">
           <div class="text-[9px] font-black tracking-[0.28em] text-zinc-400 uppercase mb-1.5">БОЕВОЙ СТИЛЬ И ОРУЖИЕ</div>
           <div class="grid grid-cols-3 gap-1.5">
             <button data-style="ronin" class="style-choice px-2 py-1.5 rounded-lg text-[10px] font-black tracking-wider border transition">⚔️ РОНИН</button>
             <button data-style="executioner" class="style-choice px-2 py-1.5 rounded-lg text-[10px] font-black tracking-wider border transition">🔥 ПАЛАЧ</button>
             <button data-style="phantom" class="style-choice px-2 py-1.5 rounded-lg text-[10px] font-black tracking-wider border transition">💨 ПРИЗРАК</button>
           </div>
-          <div id="style-desc-line" class="text-[10px] text-zinc-400 mt-1.5 leading-snug"></div>
+          <div id="style-desc-line" class="text-[10px] text-zinc-400 mt-1 leading-snug"></div>
         </div>
 
-        <!-- Secondary Navigation (2x2 clean grid) -->
-        <div class="grid grid-cols-2 gap-2">
-          <button id="btn-armory" class="px-3 py-2 bg-zinc-950/85 hover:bg-rose-950/70 border border-rose-800/70 hover:border-rose-400 rounded-xl text-[11px] font-bold tracking-wider text-rose-200 transition">
+        <!-- Secondary Navigation (2x2 clean grid, opens in right split-view panel) -->
+        <div class="nav-2x2 grid grid-cols-2 gap-1.5">
+          <button id="btn-armory" class="px-2.5 py-2 bg-zinc-950/85 hover:bg-rose-950/70 border border-rose-800/70 hover:border-rose-400 rounded-xl text-[11px] font-bold tracking-wider text-rose-200 transition">
             🗡️ ОРУЖЕЙНАЯ (1/5)
           </button>
-          <button id="btn-talismans" class="px-3 py-2 bg-zinc-950/85 hover:bg-emerald-950/70 border border-emerald-700/70 hover:border-emerald-400 rounded-xl text-[11px] font-bold tracking-wider text-emerald-200 transition">
+          <button id="btn-talismans" class="px-2.5 py-2 bg-zinc-950/85 hover:bg-emerald-950/70 border border-emerald-700/70 hover:border-emerald-400 rounded-xl text-[11px] font-bold tracking-wider text-emerald-200 transition">
             💍 ТАЛИСМАНЫ (0/2)
           </button>
-          <button id="btn-achievements" class="px-3 py-2 bg-zinc-950/85 hover:bg-amber-950/70 border border-amber-600/70 hover:border-amber-400 rounded-xl text-[11px] font-bold tracking-wider text-amber-200 transition">
-            🏆 АЧИВКИ (0/47)
+          <button id="btn-achievements" class="px-2.5 py-2 bg-zinc-950/85 hover:bg-amber-950/70 border border-amber-600/70 hover:border-amber-400 rounded-xl text-[11px] font-bold tracking-wider text-amber-200 transition">
+            🏆 АЧИВКИ (0/57)
           </button>
-          <button id="btn-open-settings" class="px-3 py-2 bg-zinc-950/85 hover:bg-zinc-800 border border-zinc-700/80 hover:border-zinc-400 rounded-xl text-[11px] font-bold tracking-wider text-zinc-200 transition">
+          <button id="btn-open-settings" class="px-2.5 py-2 bg-zinc-950/85 hover:bg-zinc-800 border border-zinc-700/80 hover:border-zinc-400 rounded-xl text-[11px] font-bold tracking-wider text-zinc-200 transition">
             ⚙️ НАСТРОЙКИ
           </button>
         </div>
@@ -416,9 +444,9 @@
       </div>
     </div>
 
-    <!-- SETTINGS & TOOLS MODAL -->
-    <div id="settings-modal" class="scrollable-panel hidden absolute inset-0 z-[44] bg-black/85 backdrop-blur-sm flex items-start justify-center p-4 overflow-y-auto">
-      <div class="w-full max-w-md bg-[#0d0508] border-2 border-zinc-700/90 rounded-2xl p-5 shadow-2xl flex flex-col gap-3">
+    <!-- SETTINGS & TOOLS MODAL (Right Split-View Panel on Wide Screens) -->
+    <div id="settings-modal" class="menu-side-panel scrollable-panel hidden absolute inset-0 z-[44] bg-black/85 backdrop-blur-sm flex items-start justify-center p-4 overflow-y-auto">
+      <div class="side-panel-card w-full max-w-md max-h-[92dvh] bg-[#0d0508] border-2 border-zinc-700/90 rounded-2xl p-4 sm:p-5 shadow-2xl flex flex-col gap-3 my-auto overflow-y-auto">
         <div class="flex items-center justify-between">
           <div>
             <div class="text-[10px] font-black tracking-[0.35em] text-zinc-400 uppercase">СИСТЕМА И УПРАВЛЕНИЕ</div>
@@ -497,31 +525,31 @@
       </div>
     </div>
 
-    <!-- TALISMANS MODAL (2 BUILD SLOTS) -->
-    <div id="talismans-modal" class="scrollable-panel hidden absolute inset-0 z-[45] bg-black/85 backdrop-blur-sm flex items-start justify-center p-4 overflow-y-auto">
-      <div class="w-full max-w-2xl bg-[#0d0508] border-2 border-emerald-800/90 rounded-2xl p-5 sm:p-6 shadow-2xl">
-        <div class="flex items-center justify-between mb-3">
+    <!-- TALISMANS MODAL (Right Split-View Panel on Wide Screens) -->
+    <div id="talismans-modal" class="menu-side-panel scrollable-panel hidden absolute inset-0 z-[45] bg-black/85 backdrop-blur-sm flex items-start justify-center p-4 overflow-y-auto">
+      <div class="side-panel-card w-full max-w-2xl max-h-[92dvh] flex flex-col bg-[#0d0508] border-2 border-emerald-800/90 rounded-2xl p-4 sm:p-5 shadow-2xl my-auto">
+        <div class="flex items-center justify-between mb-3 shrink-0">
           <div>
             <div class="text-[10px] font-black tracking-[0.35em] text-emerald-400 uppercase">НАСТРОЙКА БИЛДА · ДО 2 СЛОТОВ</div>
-            <h2 class="font-serif-noir text-2xl font-black text-zinc-100 tracking-widest">💍 ТАЛИСМАНЫ</h2>
+            <h2 class="font-serif-noir text-xl sm:text-2xl font-black text-zinc-100 tracking-widest">💍 ТАЛИСМАНЫ</h2>
           </div>
           <button id="btn-talismans-close" class="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-xs font-bold text-zinc-300">✕ ЗАКРЫТЬ</button>
         </div>
-        <div id="talismans-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
+        <div id="talismans-grid" class="scrollable-panel overflow-y-auto pr-1 grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
       </div>
     </div>
 
-    <!-- ARMORY MODAL -->
-    <div id="armory-modal" class="scrollable-panel hidden absolute inset-0 z-[45] bg-black/85 backdrop-blur-sm flex items-start justify-center p-4 overflow-y-auto">
-      <div class="w-full max-w-2xl bg-[#0d0508] border-2 border-rose-800/90 rounded-2xl p-5 sm:p-6 shadow-2xl">
-        <div class="flex items-center justify-between mb-4">
+    <!-- ARMORY MODAL (Right Split-View Panel on Wide Screens) -->
+    <div id="armory-modal" class="menu-side-panel scrollable-panel hidden absolute inset-0 z-[45] bg-black/85 backdrop-blur-sm flex items-start justify-center p-4 overflow-y-auto">
+      <div class="side-panel-card w-full max-w-2xl max-h-[92dvh] flex flex-col bg-[#0d0508] border-2 border-rose-800/90 rounded-2xl p-4 sm:p-5 shadow-2xl my-auto">
+        <div class="flex items-center justify-between mb-3 shrink-0">
           <div>
             <div class="text-[10px] font-black tracking-[0.35em] text-rose-500 uppercase">АРСЕНАЛ РОНИНА</div>
-            <h2 class="font-serif-noir text-2xl font-black text-zinc-100 tracking-widest">🗡️ ОРУЖЕЙНАЯ</h2>
+            <h2 class="font-serif-noir text-xl sm:text-2xl font-black text-zinc-100 tracking-widest">🗡️ ОРУЖЕЙНАЯ</h2>
           </div>
           <button id="btn-armory-close" class="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-xs font-bold text-zinc-300">✕ ЗАКРЫТЬ</button>
         </div>
-        <div id="armory-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+        <div id="armory-grid" class="scrollable-panel overflow-y-auto pr-1 grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
       </div>
     </div>
 
@@ -580,9 +608,9 @@
       </div>
     </div>
 
-    <!-- ACHIEVEMENTS MODAL -->
-    <div id="achievements-modal" class="scrollable-panel hidden absolute inset-0 z-[45] bg-black/85 backdrop-blur-sm flex items-start justify-center p-3 sm:p-4 overflow-y-auto">
-      <div class="w-full max-w-4xl max-h-[90vh] flex flex-col bg-[#0d0508] border-2 border-amber-700/85 rounded-2xl p-4 sm:p-6 shadow-[0_0_50px_rgba(245,158,11,0.25)]">
+    <!-- ACHIEVEMENTS MODAL (Right Split-View Panel on Wide Screens) -->
+    <div id="achievements-modal" class="menu-side-panel scrollable-panel hidden absolute inset-0 z-[45] bg-black/85 backdrop-blur-sm flex items-start justify-center p-3 sm:p-4 overflow-y-auto">
+      <div class="side-panel-card w-full max-w-3xl max-h-[92dvh] flex flex-col bg-[#0d0508] border-2 border-amber-700/85 rounded-2xl p-4 sm:p-5 shadow-[0_0_50px_rgba(245,158,11,0.25)] my-auto">
         <div class="flex items-center justify-between gap-2 mb-3 shrink-0">
           <div>
             <div class="text-[10px] font-black tracking-[0.35em] text-amber-400 uppercase">ЗАЛ СЛАВЫ И ИСПЫТАНИЙ</div>
@@ -4160,7 +4188,44 @@
       bindTouchBtn('tbtn-iaido', () => player.triggerSpecial());
       bindTouchBtn('tbtn-flask', () => player.triggerFlask());
 
+      const SIDE_PANELS = [
+        { modal: 'armory-modal', btn: 'btn-armory' },
+        { modal: 'talismans-modal', btn: 'btn-talismans' },
+        { modal: 'achievements-modal', btn: 'btn-achievements' },
+        { modal: 'settings-modal', btn: 'btn-open-settings' }
+      ];
+      function syncSidePanelUI() {
+        let anyOpen = false;
+        SIDE_PANELS.forEach(p => {
+          const m = document.getElementById(p.modal);
+          const b = document.getElementById(p.btn);
+          const open = m && !m.classList.contains('hidden');
+          if (open) anyOpen = true;
+          if (b) b.classList.toggle('ring-2', open);
+          if (b) b.classList.toggle('ring-white/75', open);
+        });
+        const ft = document.getElementById('menu-floating-title');
+        if (ft) ft.style.opacity = anyOpen ? '0' : '1';
+      }
+      function closeAllSidePanels() {
+        SIDE_PANELS.forEach(p => {
+          const m = document.getElementById(p.modal);
+          if (m) m.classList.add('hidden');
+        });
+        syncSidePanelUI();
+      }
+      function toggleSidePanel(modalId, openFn) {
+        const target = document.getElementById(modalId);
+        const wasOpen = target && !target.classList.contains('hidden');
+        closeAllSidePanels();
+        if (!wasOpen) {
+          openFn();
+          syncSidePanelUI();
+        }
+      }
+
       document.getElementById('btn-open-bosses').addEventListener('click', () => {
+        closeAllSidePanels();
         renderBossGrid();
         document.getElementById('bosses-modal').classList.remove('hidden');
       });
@@ -4168,18 +4233,19 @@
       document.getElementById('bosses-modal').addEventListener('click', e => {
         if (e.target.id === 'bosses-modal') document.getElementById('bosses-modal').classList.add('hidden');
       });
-      document.getElementById('btn-open-settings').addEventListener('click', () => document.getElementById('settings-modal').classList.remove('hidden'));
-      document.getElementById('btn-settings-close').addEventListener('click', () => document.getElementById('settings-modal').classList.add('hidden'));
+      document.getElementById('btn-open-settings').addEventListener('click', () => toggleSidePanel('settings-modal', () => document.getElementById('settings-modal').classList.remove('hidden')));
+      document.getElementById('btn-settings-close').addEventListener('click', closeAllSidePanels);
       document.getElementById('settings-modal').addEventListener('click', e => {
-        if (e.target.id === 'settings-modal') document.getElementById('settings-modal').classList.add('hidden');
+        if (e.target.id === 'settings-modal') closeAllSidePanels();
       });
       document.getElementById('btn-pantheon').addEventListener('click', () => {
+        closeAllSidePanels();
         if (typeof TOWER !== 'undefined') TOWER.active = false;
         pantheonTotalTime = 0;
         pantheonCarryHp = 3;
         startFight(0, null, true);
       });
-      document.getElementById('btn-tower').addEventListener('click', () => startEndlessTower());
+      document.getElementById('btn-tower').addEventListener('click', () => { closeAllSidePanels(); startEndlessTower(); });
       const toggleCamera = () => {
         cameraMode = cameraMode === 'iso' ? 'action' : 'iso';
         updateCameraUI();
@@ -4187,21 +4253,21 @@
       };
       document.getElementById('btn-cam-mode').addEventListener('click', toggleCamera);
       document.getElementById('hud-btn-cam').addEventListener('click', toggleCamera);
-      document.getElementById('btn-armory').addEventListener('click', openArmory);
-      document.getElementById('btn-talismans').addEventListener('click', openTalismansModal);
-      document.getElementById('btn-talismans-close').addEventListener('click', () => document.getElementById('talismans-modal').classList.add('hidden'));
+      document.getElementById('btn-armory').addEventListener('click', () => toggleSidePanel('armory-modal', openArmory));
+      document.getElementById('btn-talismans').addEventListener('click', () => toggleSidePanel('talismans-modal', openTalismansModal));
+      document.getElementById('btn-talismans-close').addEventListener('click', closeAllSidePanels);
       document.getElementById('talismans-modal').addEventListener('click', e => {
-        if (e.target.id === 'talismans-modal') document.getElementById('talismans-modal').classList.add('hidden');
+        if (e.target.id === 'talismans-modal') closeAllSidePanels();
       });
-      document.getElementById('btn-armory-close').addEventListener('click', () => document.getElementById('armory-modal').classList.add('hidden'));
+      document.getElementById('btn-armory-close').addEventListener('click', closeAllSidePanels);
       document.getElementById('armory-modal').addEventListener('click', e => {
-        if (e.target.id === 'armory-modal') document.getElementById('armory-modal').classList.add('hidden');
+        if (e.target.id === 'armory-modal') closeAllSidePanels();
       });
 
-      document.getElementById('btn-achievements').addEventListener('click', () => openAchievementsModal('all'));
-      document.getElementById('btn-ach-close').addEventListener('click', () => document.getElementById('achievements-modal').classList.add('hidden'));
+      document.getElementById('btn-achievements').addEventListener('click', () => toggleSidePanel('achievements-modal', () => openAchievementsModal('all')));
+      document.getElementById('btn-ach-close').addEventListener('click', closeAllSidePanels);
       document.getElementById('achievements-modal').addEventListener('click', e => {
-        if (e.target.id === 'achievements-modal') document.getElementById('achievements-modal').classList.add('hidden');
+        if (e.target.id === 'achievements-modal') closeAllSidePanels();
       });
       document.querySelectorAll('.ach-filter-btn').forEach(btn => {
         btn.addEventListener('click', () => openAchievementsModal(btn.dataset.filter));
