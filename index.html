@@ -31,8 +31,9 @@
 
     #game-container {
       position: relative;
-      width: 100vw;
+      width: 100%;
       height: 100vh;
+      height: 100dvh;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -332,10 +333,13 @@
         <!-- Primary Action Bar -->
         <div class="w-full flex flex-wrap items-center justify-center gap-2 mb-4">
           <button id="btn-pantheon" class="px-4 py-2 bg-gradient-to-r from-rose-950 via-red-900 to-rose-950 hover:from-rose-800 hover:to-red-800 border border-amber-400/80 rounded-lg text-xs font-black tracking-wider text-amber-200 shadow-[0_0_18px_rgba(225,29,72,0.45)] transition">
-            ⚔️ ПАНТЕОН (10 ПОДРЯД) · 0/10
+            ⚔️ ПАНТЕОН (12 ПОДРЯД) · 0/12
           </button>
           <button id="btn-armory" class="px-3.5 py-2 bg-zinc-950/90 hover:bg-rose-950/70 border border-rose-800/80 hover:border-rose-400 rounded-lg text-[11px] font-bold tracking-wider text-rose-200 transition shadow-md">
-            🗡️ ОРУЖЕЙНАЯ (1/4)
+            🗡️ ОРУЖЕЙНАЯ (1/5)
+          </button>
+          <button id="btn-achievements" class="px-3.5 py-2 bg-zinc-950/90 hover:bg-amber-950/70 border border-amber-600/80 hover:border-amber-400 rounded-lg text-[11px] font-bold tracking-wider text-amber-200 transition shadow-md">
+            🏆 АЧИВКИ (0/27)
           </button>
           <button id="btn-codex" class="px-3.5 py-2 bg-zinc-950/90 hover:bg-cyan-950/70 border border-cyan-800/80 hover:border-cyan-400 rounded-lg text-[11px] font-bold tracking-wider text-cyan-200 transition shadow-md">
             📖 КОДЕКС
@@ -369,8 +373,8 @@
           </label>
         </div>
 
-        <!-- 10 Bosses Grid -->
-        <div id="boss-grid" class="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5 sm:gap-3"></div>
+        <!-- Bosses Grid (Dynamic from BOSS_REGISTRY) -->
+        <div id="boss-grid" class="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5 sm:gap-3"></div>
       </div>
     </div>
 
@@ -397,8 +401,8 @@
           <button data-contract="blood_debt" class="contract-choice text-left p-3.5 rounded-xl bg-zinc-950/90 hover:bg-rose-950/50 border border-rose-900/80 hover:border-rose-400 transition flex flex-col justify-between gap-2">
             <div>
               <div class="text-xs font-black text-rose-300 tracking-wider">🩸 КРОВАВЫЙ ДОЛГ</div>
-              <div class="text-[11px] text-red-400 mt-1.5">💀 РИСК: Арена сужается на <b>30%</b>.</div>
-              <div class="text-[11px] text-amber-200 mt-1">⚡ НАГРАДА: Каждое идеальное <b>парирование</b> сносит боссу <b>15% макс. HP</b>.</div>
+              <div class="text-[11px] text-red-400 mt-1.5">💀 РИСК: Арена <b>-30%</b>, урон по тебе <b>x2 (2 HP)</b>, а промах парированием выжигает <b>45 стойкости и 20🩸</b>.</div>
+              <div class="text-[11px] text-amber-200 mt-1">⚡ НАГРАДА: Точное <b>парирование</b> выжигает боссу <b>5% макс. HP</b> и сносит <b>+40 концентрации</b>.</div>
             </div>
             <div class="text-[10px] font-black text-rose-500 tracking-widest text-center pt-2 border-t border-zinc-800">[ ПОДПИСАТЬ КРОВЬЮ ]</div>
           </button>
@@ -471,11 +475,43 @@
           </div>
           <div class="p-3 rounded-xl bg-zinc-950/90 border border-red-900/70">
             <div class="font-black text-red-300 mb-1">📜 КРОВАВЫЕ КОНТРАКТЫ</div>
-            <p class="text-zinc-400 leading-relaxed">Перед каждым боем можно подписать сделку: рискнуть ради 3x ускорения Иайдо, сокрушительных парирований или ранга <b>S++</b> с Золотой катаной.</p>
+            <p class="text-zinc-400 leading-relaxed">Перед каждым боем можно подписать сделку: 3x ускорение Иайдо, хардкорный «Кровавый долг» (парир = <b>5% HP</b>, но промах сжигает силы и урон x2) или ранг <b>S++</b>.</p>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- ACHIEVEMENTS MODAL -->
+    <div id="achievements-modal" class="scrollable-panel hidden absolute inset-0 z-[45] bg-black/85 backdrop-blur-sm flex items-start sm:items-center justify-center p-3 sm:p-4 overflow-y-auto">
+      <div class="w-full max-w-4xl max-h-[90vh] flex flex-col bg-[#0d0508] border-2 border-amber-700/85 rounded-2xl p-4 sm:p-6 shadow-[0_0_50px_rgba(245,158,11,0.25)]">
+        <div class="flex items-center justify-between gap-2 mb-3 shrink-0">
+          <div>
+            <div class="text-[10px] font-black tracking-[0.35em] text-amber-400 uppercase">ЗАЛ СЛАВЫ И ИСПЫТАНИЙ</div>
+            <h2 class="font-serif-noir text-xl sm:text-2xl font-black text-zinc-100 tracking-widest">🏆 ДОСТИЖЕНИЯ</h2>
+          </div>
+          <button id="btn-ach-close" class="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-xs font-bold text-zinc-300">✕ ЗАКРЫТЬ</button>
+        </div>
+
+        <div class="mb-3 shrink-0">
+          <div id="ach-progress-text" class="text-[11px] text-amber-200/90 font-bold mb-1.5">Открыто: 0 из 27 (0%)</div>
+          <div class="w-full h-2 bg-zinc-950 border border-amber-900/70 rounded-full overflow-hidden">
+            <div id="ach-progress-bar" class="h-full bg-gradient-to-r from-rose-600 via-amber-500 to-yellow-300 transition-all duration-300" style="width:0%"></div>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap gap-1.5 mb-3 shrink-0">
+          <button data-filter="all" class="ach-filter-btn px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-500 text-black">ВСЕ</button>
+          <button data-filter="boss" class="ach-filter-btn px-2.5 py-1 rounded-lg text-[11px] font-bold bg-zinc-900 text-zinc-300 border border-zinc-700">БОССЫ</button>
+          <button data-filter="style" class="ach-filter-btn px-2.5 py-1 rounded-lg text-[11px] font-bold bg-zinc-900 text-zinc-300 border border-zinc-700">СТИЛЬ И МАСТЕРСТВО</button>
+          <button data-filter="unlocked" class="ach-filter-btn px-2.5 py-1 rounded-lg text-[11px] font-bold bg-zinc-900 text-zinc-300 border border-zinc-700">ОТКРЫТЫЕ</button>
+        </div>
+
+        <div id="ach-grid" class="scrollable-panel overflow-y-auto pr-1 grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
+      </div>
+    </div>
+
+    <!-- IN-GAME ACHIEVEMENT TOASTS -->
+    <div id="ach-toast-container" class="pointer-events-none fixed top-14 right-3 sm:right-5 z-[60] flex flex-col gap-2 items-end"></div>
 
     <!-- SAVE / EXPORT MODAL -->
     <div id="save-modal" class="scrollable-panel hidden absolute inset-0 z-[45] bg-black/85 backdrop-blur-sm flex items-start sm:items-center justify-center p-4 overflow-y-auto">
@@ -548,6 +584,8 @@
     </div>
   </div>
 
+  <script src="js/boss_registry.js"></script>
+  <script src="js/achievements.js"></script>
   <script src="js/render3d.js"></script>
   <script src="js/bosskit.js"></script>
   <script src="js/stamina.js"></script>
@@ -587,45 +625,39 @@
       if (btn) btn.textContent = lowGfx ? '⚡ ГРАФИКА: ЛЁГКАЯ (60 FPS)' : '✨ ГРАФИКА: МАКС';
     }
 
-    const BOSSES_DATA = [
-      { id: 0, roman: 'I',    name: 'МОНОЛИТ',   epithet: 'Древний Идол',          hp: 420,  color: '#e11d48', speed: 120, atkRate: 1.45, spRate: 4.5 },
-      { id: 1, roman: 'II',   name: 'МАЯТНИК',   epithet: 'Палач Тишины',          hp: 520,  color: '#f97316', speed: 155, atkRate: 1.30, spRate: 4.2 },
-      { id: 2, roman: 'III',  name: 'ПРИЗМА',    epithet: 'Кристальный Серафим',   hp: 600,  color: '#06b6d4', speed: 135, atkRate: 1.25, spRate: 4.4 },
-      { id: 3, roman: 'IV',   name: 'РОЙ',       epithet: 'Пожирательница Тишины', hp: 680,  color: '#eab308', speed: 150, atkRate: 1.20, spRate: 4.3 },
-      { id: 4, roman: 'V',    name: 'ЗЕРКАЛО',   epithet: 'Призрачный Ассасин',    hp: 740,  color: '#a855f7', speed: 185, atkRate: 1.12, spRate: 3.9 },
-      { id: 5, roman: 'VI',   name: 'ЧАСОВЩИК',  epithet: 'Чумной Хронометр',      hp: 820,  color: '#10b981', speed: 145, atkRate: 1.08, spRate: 4.0 },
-      { id: 6, roman: 'VII',  name: 'ТИТАН',     epithet: 'Рогатый Демон',         hp: 960,  color: '#ef4444', speed: 140, atkRate: 1.15, spRate: 3.8 },
-      { id: 7, roman: 'VIII', name: 'ПАУК',      epithet: 'Чёрная Вдова',          hp: 1020, color: '#ec4899', speed: 175, atkRate: 1.02, spRate: 3.7 },
-      { id: 8, roman: 'IX',   name: 'БЛИЗНЕЦЫ',  epithet: 'Солнце и Луна',         hp: 1120, color: '#f59e0b', speed: 165, atkRate: 1.05, spRate: 3.8 },
-      { id: 9, roman: 'X',    name: 'АБСОЛЮТ',   epithet: 'Падший Серафим',        hp: 1450, color: '#f43f5e', speed: 185, atkRate: 0.92, spRate: 3.3 }
-    ];
-    // HARDCORE: больше HP, чаще атаки
-    BOSSES_DATA.forEach(b => { b.hp = Math.round(b.hp * 1.8); b.atkRate *= 0.85; b.spRate *= 0.88; });
+    // Список боссов загружается из модульного реестра js/boss_registry.js
+    const BOSSES_DATA = BOSS_REGISTRY;
 
     const SKINS_DATA = [
       {
         id: 'crimson',
         name: 'Алый Ронин',
-        desc: 'Классический окровавленный клинок изгнанника.',
+        desc: 'Классический окровавленный клинок изгнанника с багровым шлейфом.',
         cond: 'Доступен изначально',
-        blade: '#f8fafc', dualBlade: '#ff1744', scarf: '#e11d48', hatTrim: '#e11d48',
-        slashMain: '#fda4af', slashFinisher: '#ff1744', waveMain: '#fda4af', waveOuter: '#e11d48', glow: '#e11d48'
+        blade: '#fecdd3', dualBlade: '#ff1744', scarf: '#e11d48', hatTrim: '#e11d48',
+        slashMain: '#fda4af', slashFinisher: '#ff1744', waveMain: '#fda4af', waveOuter: '#e11d48',
+        iaidoMain: '#fb7185', iaidoCore: '#fff1f2', parryColor: '#fb7185', hitColor: '#ff1744',
+        scarColor: 'rgba(225, 29, 72, 0.52)', glow: '#e11d48'
       },
       {
         id: 'golden',
         name: 'Золотой Святой',
-        desc: 'Клинок, омытый светом смертельной сделки.',
+        desc: 'Клинок, омытый солнечным светом смертельной сделки.',
         cond: 'Победа с контрактом «Двойная Ставка»',
         blade: '#fef08a', dualBlade: '#f59e0b', scarf: '#fbbf24', hatTrim: '#f59e0b',
-        slashMain: '#fef08a', slashFinisher: '#f59e0b', waveMain: '#fef08a', waveOuter: '#d97706', glow: '#f59e0b'
+        slashMain: '#fef08a', slashFinisher: '#f59e0b', waveMain: '#fef08a', waveOuter: '#d97706',
+        iaidoMain: '#fbbf24', iaidoCore: '#fefce8', parryColor: '#fde047', hitColor: '#fbbf24',
+        scarColor: 'rgba(245, 158, 11, 0.52)', glow: '#f59e0b'
       },
       {
         id: 'cyber',
         name: 'Кибер-Фантом',
         desc: 'Высокочастотная неоновая катана призрака.',
         cond: 'Победить 5 разных боссов',
-        blade: '#cffafe', dualBlade: '#06b6d4', scarf: '#22d3ee', hatTrim: '#06b6d4',
-        slashMain: '#67e8f9', slashFinisher: '#06b6d4', waveMain: '#a5f3fc', waveOuter: '#0891b2', glow: '#22d3ee'
+        blade: '#a5f3fc', dualBlade: '#06b6d4', scarf: '#22d3ee', hatTrim: '#06b6d4',
+        slashMain: '#67e8f9', slashFinisher: '#06b6d4', waveMain: '#a5f3fc', waveOuter: '#0891b2',
+        iaidoMain: '#22d3ee', iaidoCore: '#ecfeff', parryColor: '#22d3ee', hitColor: '#22d3ee',
+        scarColor: 'rgba(6, 182, 212, 0.52)', glow: '#22d3ee'
       },
       {
         id: 'ashen',
@@ -633,7 +665,19 @@
         desc: 'Чёрно-фиолетовое пламя безупречной казни.',
         cond: 'Пройти любого босса без урона (S+)',
         blade: '#f5d0fe', dualBlade: '#c026d3', scarf: '#a855f7', hatTrim: '#9333ea',
-        slashMain: '#e879f9', slashFinisher: '#9333ea', waveMain: '#f0abfc', waveOuter: '#7e22ce', glow: '#a855f7'
+        slashMain: '#e879f9', slashFinisher: '#9333ea', waveMain: '#f0abfc', waveOuter: '#7e22ce',
+        iaidoMain: '#c084fc', iaidoCore: '#faf5ff', parryColor: '#d8b4fe', hitColor: '#e879f9',
+        scarColor: 'rgba(168, 85, 247, 0.52)', glow: '#a855f7'
+      },
+      {
+        id: 'emerald',
+        name: 'Нефритовый Жнец',
+        desc: 'Изумрудный клинок духовного пламени для истинных мастеров.',
+        cond: 'Открыть 10 любых достижений',
+        blade: '#a7f3d0', dualBlade: '#10b981', scarf: '#34d399', hatTrim: '#10b981',
+        slashMain: '#6ee7b7', slashFinisher: '#059669', waveMain: '#a7f3d0', waveOuter: '#047857',
+        iaidoMain: '#34d399', iaidoCore: '#ecfdf5', parryColor: '#34d399', hitColor: '#10b981',
+        scarColor: 'rgba(16, 185, 129, 0.52)', glow: '#10b981'
       }
     ];
 
@@ -650,7 +694,7 @@
 
     const CONTRACTS_META = {
       blind_blade: { name: 'СЛЕПОЙ КЛИНОК', hud: '👁️ СЛЕПОЙ КЛИНОК: 1 HP · ИАЙДО x3' },
-      blood_debt:  { name: 'КРОВАВЫЙ ДОЛГ', hud: '🩸 КРОВАВЫЙ ДОЛГ: АРЕНА -30% · ПАРИР = 15% HP' },
+      blood_debt:  { name: 'КРОВАВЫЙ ДОЛГ', hud: '🩸 КРОВАВЫЙ ДОЛГ: АРЕНА -30% · УРОН x2 · ПАРИР = 5% HP' },
       double_down: { name: 'ДВОЙНАЯ СТАВКА', hud: '👑 ДВОЙНАЯ СТАВКА: СНАРЯДЫ +40% · РАНГ S++' }
     };
 
@@ -660,7 +704,7 @@
     let unlockedBosses = 1;
     let unlockAllToggle = false;
     let bossRecords = {};
-    let unlockedSkins = { crimson: true, golden: false, cyber: false, ashen: false };
+    let unlockedSkins = { crimson: true, golden: false, cyber: false, ashen: false, emerald: false };
     let activeSkinId = 'crimson';
     let pantheonBest = 0;
     let pantheonBestTime = null;
@@ -694,12 +738,16 @@
         unlockedSkins.ashen = true;
         newly.push('Пепельный Демон');
       }
+      if (typeof ACH !== 'undefined' && Object.keys(ACH.unlocked).length >= 10 && !unlockedSkins.emerald) {
+        unlockedSkins.emerald = true;
+        newly.push('Нефритовый Жнец');
+      }
       return newly;
     }
 
     function buildSavePayload() {
       return {
-        v: 3,
+        v: 4,
         unlockedBosses,
         unlockAllToggle,
         unlockedSkins,
@@ -707,6 +755,7 @@
         pantheonBest,
         pantheonBestTime,
         records: bossRecords,
+        achievements: typeof achExportSave === 'function' ? achExportSave() : null,
         musicEnabled: audio ? audio.musicEnabled : true,
         trackIndex: audio ? audio.trackIndex : 0,
         lowGfx
@@ -718,7 +767,12 @@
       if (typeof parsed.unlockedBosses === 'number') unlockedBosses = Math.max(1, Math.min(BOSSES_DATA.length, parsed.unlockedBosses));
       if (typeof parsed.unlockAllToggle === 'boolean') unlockAllToggle = parsed.unlockAllToggle;
       if (parsed.unlockedSkins && typeof parsed.unlockedSkins === 'object') {
-        unlockedSkins = { crimson: true, golden: !!parsed.unlockedSkins.golden, cyber: !!parsed.unlockedSkins.cyber, ashen: !!parsed.unlockedSkins.ashen };
+        const nextSkins = { crimson: true };
+        SKINS_DATA.forEach(s => { if (s.id !== 'crimson') nextSkins[s.id] = !!parsed.unlockedSkins[s.id]; });
+        unlockedSkins = nextSkins;
+      }
+      if (parsed.achievements && typeof achImportSave === 'function') {
+        achImportSave(parsed.achievements);
       }
       if (typeof parsed.activeSkinId === 'string' && unlockedSkins[parsed.activeSkinId]) {
         activeSkinId = parsed.activeSkinId;
@@ -742,7 +796,9 @@
       if (typeof parsed.musicEnabled === 'boolean' && audio) audio.musicEnabled = parsed.musicEnabled;
       if (typeof parsed.trackIndex === 'number' && audio) audio.trackIndex = parsed.trackIndex % 2;
       if (typeof parsed.lowGfx === 'boolean') lowGfx = parsed.lowGfx;
+      if (typeof achSyncWithRecords === 'function') achSyncWithRecords(true);
       checkSkinUnlocks();
+      if (typeof refreshPlayerSkin3D === 'function') refreshPlayerSkin3D();
       return true;
     }
 
@@ -1349,12 +1405,15 @@
 
     class BloodWave {
       constructor(x, y, angle, dmg, isRage) {
+        const skin = getActiveSkin();
         this.x = x; this.y = y;
         this.angle = angle;
         this.vx = Math.cos(angle) * 620;
         this.vy = Math.sin(angle) * 620;
         this.dmg = dmg;
         this.isRage = isRage;
+        this.waveMain = skin.waveMain;
+        this.waveOuter = skin.waveOuter;
         this.radius = 30;
         this.life = 0.72;
         this.hitIds = new Set();
@@ -1490,7 +1549,23 @@
           if (this.comboReset <= 0) this.comboStep = 0;
         }
         if (this.swingAnim > 0) this.swingAnim -= dt;
-        if (this.parryTimer > 0) this.parryTimer -= dt;
+        if (this.parryTimer > 0) {
+          this.parryTimer -= dt;
+          if (this.parryTimer <= 0 && !this.parrySuccess && activeContract === 'blood_debt') {
+            // Кровавый долг: штраф за пустое парирование в молоко!
+            this.blood = Math.max(0, this.blood - 20);
+            if (typeof STAM !== 'undefined') {
+              this.stamina = Math.max(0, (this.stamina || 0) - 45);
+              this.stamDelay = 0.65;
+              this.stamShow = 1.4;
+              if (this.stamina <= 0) this.exhausted = STAM.exhaustTime;
+            }
+            audio.playTone(210, 85, 0.18, 'sawtooth', 0.14);
+            screenShake = Math.max(screenShake, 6);
+            spawnParticles(this.x, this.y, '#e11d48', 12, 170, 3.5, 0.28);
+            spawnFloatingText(this.x, this.y - 30, '🩸 ДОЛГ: ПРОМАХ ПАРИРОВАНИЯ! -45⚡ -20🩸', '#fb7185', 13);
+          }
+        }
         if (this.parryCd > 0) this.parryCd -= dt;
         if (this.rageTimer > 0) this.rageTimer -= dt;
         if (this.iaidoCd > 0) this.iaidoCd -= dt;
@@ -1595,6 +1670,7 @@
         const reach = step === 2 ? 96 : 84;
         const dmg = Math.round((step === 2 ? 32 : 20) * mult);
 
+        const skin = getActiveSkin();
         audio.slash(step);
         if (typeof sigOnPlayerAttack === 'function') sigOnPlayerAttack(step, reach, dmg);
         slashArcs.push({
@@ -1604,6 +1680,7 @@
           step,
           isRage,
           isDual,
+          col: isDual ? skin.dualBlade : (step === 2 ? skin.slashFinisher : skin.slashMain),
           life: 0.16,
           maxLife: 0.16
         });
@@ -1623,6 +1700,7 @@
                 startBladeClash();
                 return;
               }
+              if (typeof achSetDamageSource === 'function') achSetDamageSource('melee');
               damageBossTarget(target, dmg, isTwin2, true, step === 2 ? 22 : 12);
               this.addBlood(step === 2 ? 20 : 14);
               if (isDual) {
@@ -1648,7 +1726,7 @@
         if (step === 2 && this.blood >= 25) {
           this.blood -= 25;
           playerWaves.push(new BloodWave(this.x, this.y, this.angle, Math.round(30 * mult), isRage));
-          spawnParticles(this.x + Math.cos(this.angle) * 20, this.y + Math.sin(this.angle) * 20, getActiveSkin().glow, 10, 180, 4, 0.25);
+          spawnParticles(this.x + Math.cos(this.angle) * 20, this.y + Math.sin(this.angle) * 20, skin.glow, 10, 180, 4, 0.25);
         }
       }
 
@@ -1657,7 +1735,8 @@
         if (clashState) { resolveClashWin(); return; }
         if (this.parryCd > 0) return;
         if (!spendStamina(this, 'parry')) return;
-        this.parryTimer = 0.24;
+        this.parrySuccess = false;
+        this.parryTimer = activeContract === 'blood_debt' ? 0.20 : 0.24;
         this.parryCd = 0.55;
         audio.playTone(620, 880, 0.08, 'sine', 0.1);
       }
@@ -1679,7 +1758,8 @@
         this.dashVy = dy * 760;
         if (typeof sigOnPlayerDash === 'function') sigOnPlayerDash();
         audio.dash();
-        spawnParticles(this.x, this.y, '#fbbf24', 10, 140, 3.5, 0.22);
+        const skin = getActiveSkin();
+        spawnParticles(this.x, this.y, skin.slashMain || skin.glow, 12, 150, 3.5, 0.24);
       }
 
       triggerPerfectDodge() {
@@ -1689,9 +1769,11 @@
         this.speedBoost = 1.4;
         restoreStamina(this, 30);
         this.addBlood(25);
+        if (typeof achOnPerfectDodge === 'function') achOnPerfectDodge();
         hitStop = Math.max(hitStop, 0.05);
-        spawnParticles(this.x, this.y, '#22d3ee', 16, 220, 4, 0.35);
-        spawnFloatingText(this.x, this.y - 26, '⚡ ИДЕАЛЬНЫЙ УВОРОТ +25🩸', '#22d3ee', 14);
+        const skin = getActiveSkin();
+        spawnParticles(this.x, this.y, skin.parryColor || '#22d3ee', 16, 220, 4, 0.35);
+        spawnFloatingText(this.x, this.y - 26, '⚡ ИДЕАЛЬНЫЙ УВОРОТ +25🩸', skin.parryColor || '#22d3ee', 14);
       }
 
       triggerSpecial() {
@@ -1701,6 +1783,9 @@
           spawnFloatingText(this.x, this.y - 24, `НУЖНО ${cost}🩸 КРОВИ`, '#fb7185', 13);
           return;
         }
+        const skin = getActiveSkin();
+        const iCol = skin.iaidoMain || skin.glow;
+        const iCore = skin.iaidoCore || '#ffffff';
         this.blood -= cost;
         this.iaidoCd = this.getIaidoMaxCd();
         this.invuln = Math.max(this.invuln, 0.32);
@@ -1721,8 +1806,8 @@
         screenShake = Math.max(screenShake, 12);
         hitStop = Math.max(hitStop, 0.07);
 
-        addSlashScar(startX, startY, endX, endY, 'rgba(217, 70, 239, 0.45)', 5);
-        iaidoRifts.push({ x1: startX, y1: startY, x2: endX, y2: endY, life: 0.45, maxLife: 0.45 });
+        addSlashScar(startX, startY, endX, endY, skin.scarColor || 'rgba(225, 29, 72, 0.5)', 5);
+        iaidoRifts.push({ x1: startX, y1: startY, x2: endX, y2: endY, col: iCol, core: iCore, life: 0.48, maxLife: 0.48 });
         for (let i = 0; i < 3; i++) {
           const t = 0.25 + i * 0.25;
           const mx = startX + (endX - startX) * t;
@@ -1731,15 +1816,16 @@
           iaidoRifts.push({
             x1: mx - Math.cos(perp) * 65, y1: my - Math.sin(perp) * 65,
             x2: mx + Math.cos(perp) * 65, y2: my + Math.sin(perp) * 65,
-            life: 0.4, maxLife: 0.4
+            col: iCol, core: iCore, life: 0.42, maxLife: 0.42
           });
         }
+        if (typeof spawnHitFlash3D === 'function') spawnHitFlash3D(endX, endY, iCol, 1.8, 0.3);
 
         // Destroy enemy projectiles along path
         for (let i = projectiles.length - 1; i >= 0; i--) {
           const p = projectiles[i];
           if (!p.reflected && distToSegment(p.x, p.y, startX, startY, endX, endY) <= 58) {
-            spawnParticles(p.x, p.y, '#e879f9', 6, 150, 3, 0.25);
+            spawnParticles(p.x, p.y, iCol, 6, 150, 3, 0.25);
             projectiles.splice(i, 1);
           }
         }
@@ -1747,8 +1833,9 @@
         // Damage boss & twin2 along path
         const dmg = Math.round(92 * (this.rageTimer > 0 ? 2 : 1));
         if (boss && !boss.dead && boss.jumpZ <= 15 && distToSegment(boss.x, boss.y, startX, startY, endX, endY) <= boss.radius + 54) {
+          if (typeof achSetDamageSource === 'function') achSetDamageSource('iaido');
           damageBossTarget(boss, dmg, false, true, 24);
-          spawnFloatingText(boss.x, boss.y - 45, `⚡ ИАЙДО -${dmg}`, '#e879f9', 18);
+          spawnFloatingText(boss.x, boss.y - 45, `⚡ ИАЙДО -${dmg}`, iCol, 18);
         }
         if (boss && boss.twin2 && !boss.twin2.dead && distToSegment(boss.twin2.x, boss.twin2.y, startX, startY, endX, endY) <= boss.twin2.radius + 54) {
           damageBossTarget(boss.twin2, dmg, true, true, 24);
@@ -1757,6 +1844,7 @@
 
       takeDamage(amount = 1) {
         if (this.dead || this.invuln > 0) return;
+        if (activeContract === 'blood_debt') amount = Math.max(amount, 2);
 
         if (this.dualBladeShield) {
           this.dualBladeShield = false;
@@ -1918,14 +2006,17 @@
 
         this.x = LOGICAL_WIDTH / 2;
         this.y = ARENA.y + ARENA.h * 0.25;
-        this.radius = this.id === 6 ? 38 : (this.id === 9 ? 36 : 30);
+        this.radius = data.radius || 30;
+        this.desiredDist = data.desiredDist || 185;
+        this.projShape = data.projShape || (this.id % 2 === 1 ? 'blade' : 'orb');
+        this.projSpread = data.projSpread || 0.20;
         this.dead = false;
         this.phase2 = false;
         this.hitFlash = 0;
         this.animTime = 0;
 
         this.posture = 0;
-        this.maxPosture = 100 + this.id * 10;
+        this.maxPosture = 100 + Math.min(12, this.id) * 10;
         this.postureDecayDelay = 0;
         this.staggerTimer = 0;
 
@@ -1947,7 +2038,7 @@
         this.lasers = [];
 
         this.twin2 = null;
-        if (this.id === 8) {
+        if (data.hasTwin) {
           this.x = LOGICAL_WIDTH / 2 - 140;
           this.twin2 = {
             x: LOGICAL_WIDTH / 2 + 140,
@@ -2102,7 +2193,7 @@
         const dx = player.x - this.x;
         const dy = player.y - this.y;
         const dist = Math.hypot(dx, dy) || 1;
-        const desiredDist = this.id === 2 || this.id === 5 ? 260 : 185;
+        const desiredDist = this.desiredDist || 185;
         const spd = this.baseSpeed * (this.phase2 ? 1.24 : 1);
 
         this.strafeTimer -= dt;
@@ -2175,14 +2266,16 @@
       }
 
       firePrimary(aim) {
+        const cfg = typeof getBossConfig === 'function' ? getBossConfig(this.id) : null;
+        if (cfg && typeof cfg.firePrimary === 'function') { cfg.firePrimary(this, aim); return; }
         const spdMult = (this.phase2 ? 1.2 : 1) * (activeContract === 'double_down' ? 1.4 : 1);
         const baseSpd = 320 * spdMult;
         const count = this.phase2 ? 5 : 3;
-        const spread = this.id === 5 || this.id === 9 ? 0.26 : 0.20;
+        const spread = this.projSpread || 0.20;
         for (let i = 0; i < count; i++) {
           const offset = (i - (count - 1) / 2) * spread;
           const a = aim + offset;
-          projectiles.push(new Projectile(this.x, this.y, Math.cos(a) * baseSpd, Math.sin(a) * baseSpd, 8, this.color, 1, this.id % 2 === 1 ? 'blade' : 'orb'));
+          projectiles.push(new Projectile(this.x, this.y, Math.cos(a) * baseSpd, Math.sin(a) * baseSpd, 8, this.color, 1, this.projShape));
         }
       }
 
@@ -2224,64 +2317,12 @@
       }
 
       fireSpecial(aim) {
-        const id = this.id;
-        if (id === 0) {
-          if (this.phase2 && Math.random() < 0.55) this.startDash(aim);
-          else this.spawnFloorBlades('line');
-        } else if (id === 1) {
-          if (Math.random() < 0.6) this.startDash(aim);
-          else this.spawnFloorBlades('cross');
-        } else if (id === 2) {
-          const count = this.phase2 ? 3 : 2;
-          for (let i = 0; i < count; i++) {
-            this.lasers.push({ angle: aim + (i / count) * Math.PI * 2, rotSpeed: 0.85, len: 520, life: 2.1, color: '#06b6d4', dodged: false });
-          }
-          this.spawnFloorBlades('line');
-        } else if (id === 3) {
-          this.startCrushingJump();
-        } else if (id === 4) {
-          spawnParticles(this.x, this.y, '#a855f7', 16, 180, 4, 0.3);
-          this.x = player.x - Math.cos(player.angle) * 145;
-          this.y = player.y - Math.sin(player.angle) * 145;
-          clampToArena(this, this.radius + 10);
-          spawnParticles(this.x, this.y, '#a855f7', 16, 180, 4, 0.3);
-          const newAim = Math.atan2(player.y - this.y, player.x - this.x);
-          if (Math.random() < 0.6) this.startDash(newAim);
-          else this.spawnFloorBlades('cross');
-        } else if (id === 5) {
-          const spd = 290 * (activeContract === 'double_down' ? 1.4 : 1);
-          for (let i = 0; i < 12; i++) {
-            const a = (i / 12) * Math.PI * 2 + this.animTime;
-            projectiles.push(new Projectile(this.x, this.y, Math.cos(a) * spd, Math.sin(a) * spd, 8, '#10b981', 1, 'blade'));
-          }
-          this.spawnFloorBlades('cross');
-        } else if (id === 6) {
-          for (let i = 0; i < 3; i++) {
-            hazards.push({
-              x: player.x + (Math.random() - 0.5) * 200,
-              y: player.y + (Math.random() - 0.5) * 160,
-              radius: 56, warn: 0.75, life: 0.45, hit: false
-            });
-          }
-          if (Math.random() < 0.55) this.startCrushingJump();
-          else this.startDash(aim);
-        } else if (id === 7) {
-          if (Math.random() < 0.5) this.startCrushingJump();
-          else this.startDash(aim);
-        } else if (id === 8) {
+        const cfg = typeof getBossConfig === 'function' ? getBossConfig(this.id) : null;
+        if (cfg && typeof cfg.fireSpecial === 'function') {
+          cfg.fireSpecial(this, aim);
+        } else {
           this.startDash(aim);
-          this.spawnFloorBlades('line');
-        } else if (id === 9) {
-          const r = Math.random();
-          if (r < 0.33) this.startCrushingJump();
-          else if (r < 0.66) {
-            this.startDash(aim);
-            this.spawnFloorBlades('cross');
-          } else {
-            for (let i = 0; i < 3; i++) {
-              this.lasers.push({ angle: aim + (i / 3) * Math.PI * 2, rotSpeed: 0.95, len: 560, life: 2.0, color: '#f43f5e', dodged: false });
-            }
-          }
+          this.spawnFloorBlades('cross');
         }
       }
 
@@ -2570,13 +2611,15 @@
         dmg = Math.max(1, Math.round(dmg * 0.25)); postureAmt = 0;
         if (Math.random() < 0.35) spawnFloatingText(target.x, target.y - 40, '🛡️ БРОНЯ', '#a1a1aa', 13);
       }
+      const skin = getActiveSkin();
       target.hp -= dmg;
       target.hitFlash = 0.08;
       audio.hit();
       screenShake = Math.max(screenShake, 5);
-      if (addBloodScarFlag) addBloodScar(target.x, target.y, 14);
-      spawnParticles(target.x, target.y, '#ff1744', 9, 190, 3.5, 0.28);
-      spawnFloatingText(target.x + (Math.random() - 0.5) * 26, target.y - 24, `-${dmg}`, player.rageTimer > 0 ? '#fde047' : '#ffffff', 16);
+      if (addBloodScarFlag) addBloodScar(target.x, target.y, 14, skin.scarColor || 'rgba(136, 19, 55, 0.52)');
+      spawnParticles(target.x, target.y, skin.hitColor || skin.glow, 11, 195, 3.8, 0.28);
+      if (typeof spawnHitFlash3D === 'function') spawnHitFlash3D(target.x, target.y, skin.hitColor || skin.glow, 1.15, 0.2);
+      spawnFloatingText(target.x + (Math.random() - 0.5) * 26, target.y - 24, `-${dmg}`, player.rageTimer > 0 ? (skin.slashMain || '#fde047') : '#ffffff', 16);
 
       if (!isTwin2 && postureAmt > 0) {
         target.addPosture(postureAmt);
@@ -2602,6 +2645,8 @@
     }
 
     function performExecution(target) {
+      const skin = getActiveSkin();
+      const exCol = skin.slashFinisher || skin.glow;
       const dmg = Math.round(target.maxHp * 0.24 * (player.rageTimer > 0 ? 1.35 : 1));
       player.x = target.x - Math.cos(player.angle) * 26;
       player.y = target.y - Math.sin(player.angle) * 26;
@@ -2610,20 +2655,27 @@
       target.staggerTimer = 0;
       target.posture = 0;
 
+      if (typeof achSetDamageSource === 'function') achSetDamageSource('execution');
+      if (typeof achOnExecution === 'function') achOnExecution();
+
       audio.execute();
       hitStop = 0.3;
       startCinematic(target.x, target.y, 1.15, 'exec');
       invertFlash = 0.12;
       screenShake = 18;
-      addBloodScar(target.x, target.y, 34, 'rgba(190, 18, 60, 0.65)');
-      iaidoRifts.push({ x1: target.x - 85, y1: target.y - 85, x2: target.x + 85, y2: target.y + 85, life: 0.55, maxLife: 0.55 });
-      iaidoRifts.push({ x1: target.x + 85, y1: target.y - 85, x2: target.x - 85, y2: target.y + 85, life: 0.55, maxLife: 0.55 });
-      spawnFloatingText(target.x, target.y - 52, `💀 КАЗНЬ -${dmg}!`, '#ff1744', 24);
+      addBloodScar(target.x, target.y, 34, skin.scarColor || 'rgba(190, 18, 60, 0.65)');
+      iaidoRifts.push({ x1: target.x - 85, y1: target.y - 85, x2: target.x + 85, y2: target.y + 85, col: exCol, core: skin.iaidoCore || '#ffffff', life: 0.55, maxLife: 0.55 });
+      iaidoRifts.push({ x1: target.x + 85, y1: target.y - 85, x2: target.x - 85, y2: target.y + 85, col: exCol, core: skin.iaidoCore || '#ffffff', life: 0.55, maxLife: 0.55 });
+      if (typeof spawnHitFlash3D === 'function') spawnHitFlash3D(target.x, target.y, exCol, 2.5, 0.38);
+      spawnParticles(target.x, target.y, skin.slashMain || exCol, 26, 260, 4.8, 0.45);
+      spawnFloatingText(target.x, target.y - 52, `💀 КАЗНЬ -${dmg}!`, skin.slashMain || '#ff1744', 24);
       damageBossTarget(target, dmg, false, true, 0);
     }
 
     function startBladeClash() {
+      const skin = getActiveSkin();
       audio.clashStart();
+      if (player) player.parrySuccess = true;
       boss.isDashing = false;
       clashState = {
         x: (player.x + boss.x) / 2,
@@ -2631,11 +2683,12 @@
         timer: 0.72,
         duration: 0.72
       };
-      spawnParticles(clashState.x, clashState.y, '#fde047', 24, 260, 4.5, 0.4);
+      spawnParticles(clashState.x, clashState.y, skin.parryColor || '#fde047', 24, 260, 4.5, 0.4);
     }
 
     function resolveClashWin() {
       if (!clashState) return;
+      const skin = getActiveSkin();
       const cx = clashState.x, cy = clashState.y;
       clashState = null;
       audio.clashWin();
@@ -2643,19 +2696,26 @@
       invertFlash = 0.1;
       screenShake = 18;
       player.invuln = 0.65;
+      player.parrySuccess = true;
       player.rageTimer = 4.5;
       restoreStamina(player, 40);
       startCinematic(cx, cy, 0.8, 'clash');
       player.addBlood(45);
       runParries++;
+      if (typeof achOnParry === 'function') achOnParry();
+      if (typeof achOnClashWin === 'function') achOnClashWin();
+      if (typeof achSetDamageSource === 'function') achSetDamageSource('clash');
 
-      const dmg = Math.round(boss.maxHp * 0.14);
-      iaidoRifts.push({ x1: cx - 100, y1: cy - 40, x2: cx + 100, y2: cy + 40, life: 0.5, maxLife: 0.5 });
-      spawnFloatingText(cx, cy - 42, `⚡ КЛЭШ РАЗРУБЛЕН! -${dmg}`, '#fde047', 22);
+      const extraDebt = activeContract === 'blood_debt' ? 0.05 : 0;
+      const dmg = Math.round(boss.maxHp * (0.14 + extraDebt));
+      iaidoRifts.push({ x1: cx - 100, y1: cy - 40, x2: cx + 100, y2: cy + 40, col: skin.slashFinisher || skin.glow, core: skin.iaidoCore || '#ffffff', life: 0.5, maxLife: 0.5 });
+      if (typeof spawnHitFlash3D === 'function') spawnHitFlash3D(cx, cy, skin.parryColor || skin.glow, 2.2, 0.32);
+      spawnFloatingText(cx, cy - 42, `⚡ КЛЭШ РАЗРУБЛЕН! -${dmg}`, skin.slashMain || '#fde047', 22);
       damageBossTarget(boss, dmg, false, true, 55);
     }
 
     function triggerBossSlain() {
+      const skin = getActiveSkin();
       pendingOutcome = 'WIN';
       endDelayTimer = lowGfx ? 0.85 : 1.25;
       projectiles.length = 0;
@@ -2666,7 +2726,9 @@
       startCinematic(boss.x, boss.y, lowGfx ? 1.0 : 1.5, 'slain');
       audio.execute();
       screenShake = lowGfx ? 10 : 20;
-      iaidoRifts.push({ x1: boss.x - 140, y1: boss.y - 90, x2: boss.x + 140, y2: boss.y + 90, life: lowGfx ? 0.85 : 1.2, maxLife: lowGfx ? 0.85 : 1.2 });
+      iaidoRifts.push({ x1: boss.x - 140, y1: boss.y - 90, x2: boss.x + 140, y2: boss.y + 90, col: skin.slashFinisher || skin.glow, core: skin.iaidoCore || '#ffffff', life: lowGfx ? 0.85 : 1.2, maxLife: lowGfx ? 0.85 : 1.2 });
+      if (typeof spawnHitFlash3D === 'function') spawnHitFlash3D(boss.x, boss.y, skin.glow, 2.8, 0.5);
+      if (typeof achOnBossKilled === 'function') achOnBossKilled(currentBossIdx);
       document.getElementById('slain-banner').classList.remove('hidden');
     }
 
@@ -2688,8 +2750,9 @@
       rec.attempts++;
       saveProgress();
 
-      ['main-menu', 'contract-modal', 'result-modal', 'pause-codex-modal', 'armory-modal', 'save-modal', 'slain-banner'].forEach(id => {
-        document.getElementById(id).classList.add('hidden');
+      ['main-menu', 'contract-modal', 'result-modal', 'pause-codex-modal', 'armory-modal', 'achievements-modal', 'save-modal', 'slain-banner'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
       });
       document.getElementById('hud').classList.remove('hidden');
       if (isTouchDevice) {
@@ -2740,7 +2803,7 @@
 
       const pBadge = document.getElementById('hud-pantheon-badge');
       if (pantheonMode) {
-        pBadge.textContent = `⚔️ ПАНТЕОН ${bossIdx + 1} / 10`;
+        pBadge.textContent = `⚔️ ПАНТЕОН ${bossIdx + 1} / ${BOSSES_DATA.length}`;
         pBadge.classList.remove('hidden');
       } else {
         pBadge.classList.add('hidden');
@@ -2758,6 +2821,9 @@
       document.getElementById('letterbox-bottom').classList.remove('translate-y-full');
 
       initBossSig(boss);
+      if (typeof achResetRun === 'function') achResetRun();
+      if (typeof refreshPlayerSkin3D === 'function') refreshPlayerSkin3D();
+      if (typeof resetBladeTrail === 'function') resetBladeTrail();
       FX.cine = null; staminaInit(player);
       gameState = 'PLAYING';
       audio.setPhase2(false);
@@ -2815,12 +2881,12 @@
             return;
           } else {
             if (pantheonBestTime === null || pantheonTotalTime < pantheonBestTime) pantheonBestTime = pantheonTotalTime;
-            unlockedMsgs.push('👑 ПАНТЕОН 10/10 ПОЛНОСТЬЮ ПРОЙДЕН!');
+            unlockedMsgs.push(`👑 ПАНТЕОН ${BOSSES_DATA.length}/${BOSSES_DATA.length} ПОЛНОСТЬЮ ПРОЙДЕН!`);
           }
         }
         saveProgress();
 
-        subEl.textContent = pantheonMode ? 'ПАНТЕОН ПОКОРЁН (10/10)' : `${BOSSES_DATA[currentBossIdx].roman}. ${BOSSES_DATA[currentBossIdx].name} НИЗВЕРГНУТ`;
+        subEl.textContent = pantheonMode ? `ПАНТЕОН ПОКОРЁН (${BOSSES_DATA.length}/${BOSSES_DATA.length})` : `${BOSSES_DATA[currentBossIdx].roman}. ${BOSSES_DATA[currentBossIdx].name} НИЗВЕРГНУТ`;
         titleEl.textContent = 'ПОБЕДА';
         titleEl.className = 'font-serif-noir text-3xl font-black text-amber-300 tracking-widest mb-3';
 
@@ -2839,7 +2905,7 @@
           pantheonBest = currentBossIdx;
           saveProgress();
         }
-        subEl.textContent = pantheonMode ? `ПАНТЕОН ПРЕРВАН НА ${currentBossIdx + 1} / 10` : `${BOSSES_DATA[currentBossIdx].roman}. ${BOSSES_DATA[currentBossIdx].name}`;
+        subEl.textContent = pantheonMode ? `ПАНТЕОН ПРЕРВАН НА ${currentBossIdx + 1} / ${BOSSES_DATA.length}` : `${BOSSES_DATA[currentBossIdx].roman}. ${BOSSES_DATA[currentBossIdx].name}`;
         titleEl.textContent = 'ВЫ ПАЛИ';
         titleEl.className = 'font-serif-noir text-3xl font-black text-rose-500 tracking-widest mb-3';
         rankWrap.classList.add('hidden');
@@ -2854,8 +2920,9 @@
     function returnToMenu() {
       gameState = 'MENU';
       audio.stopMusic();
-      ['hud', 'touch-controls', 'result-modal', 'pause-codex-modal', 'contract-modal', 'armory-modal', 'save-modal', 'boss-intro-overlay', 'slain-banner'].forEach(id => {
-        document.getElementById(id).classList.add('hidden');
+      ['hud', 'touch-controls', 'result-modal', 'pause-codex-modal', 'contract-modal', 'armory-modal', 'achievements-modal', 'save-modal', 'boss-intro-overlay', 'slain-banner'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
       });
       document.getElementById('letterbox-top').classList.add('-translate-y-full');
       document.getElementById('letterbox-bottom').classList.add('translate-y-full');
@@ -3023,6 +3090,7 @@
         if (boss && !boss.dead && boss.jumpZ <= 15 && !w.hitIds.has('boss')) {
           if (Math.hypot(w.x - boss.x, w.y - boss.y) <= w.radius + boss.radius) {
             w.hitIds.add('boss');
+            if (typeof achSetDamageSource === 'function') achSetDamageSource('wave');
             damageBossTarget(boss, w.dmg, false, true, 14);
           }
         }
@@ -3045,7 +3113,10 @@
         if (!p.reflected) {
           const d = Math.hypot(p.x - player.x, p.y - player.y);
           if (player.parryTimer > 0 && d <= player.radius + p.radius + 26) {
+            const skin = getActiveSkin();
+            const pCol = skin.parryColor || '#22d3ee';
             p.reflected = true;
+            p.reflectedColor = pCol;
             const ang = boss && !boss.dead ? Math.atan2(boss.y - p.y, boss.x - p.x) : Math.atan2(-p.vy, -p.vx);
             p.vx = Math.cos(ang) * 680;
             p.vy = Math.sin(ang) * 680;
@@ -3054,17 +3125,21 @@
             hitStop = 0.065;
             invertFlash = 0.06;
             screenShake = 9;
+            player.parrySuccess = true;
             player.rageTimer = 3.8;
             restoreStamina(player, 30);
             player.addBlood(40);
             runParries++;
-            spawnParticles(p.x, p.y, '#22d3ee', 16, 240, 4, 0.3);
-            spawnFloatingText(player.x, player.y - 28, '🛡️ ПАРИРОВАНИЕ! +40🩸', '#22d3ee', 15);
+            if (typeof achOnParry === 'function') achOnParry();
+            spawnParticles(p.x, p.y, pCol, 18, 250, 4.2, 0.32);
+            if (typeof spawnHitFlash3D === 'function') spawnHitFlash3D(p.x, p.y, pCol, 1.55, 0.25);
+            spawnFloatingText(player.x, player.y - 28, '🛡️ ПАРИРОВАНИЕ! +40🩸', pCol, 15);
             if (boss && !boss.dead) {
-              boss.addPosture(28);
+              boss.addPosture(activeContract === 'blood_debt' ? 40 : 28);
               if (activeContract === 'blood_debt') {
-                const debtDmg = Math.round(boss.maxHp * 0.15);
-                spawnFloatingText(boss.x, boss.y - 42, `🩸 ДОЛГ -${debtDmg}`, '#ff1744', 18);
+                const debtDmg = Math.max(12, Math.round(boss.maxHp * 0.05));
+                if (typeof achSetDamageSource === 'function') achSetDamageSource('blood_debt');
+                spawnFloatingText(boss.x, boss.y - 42, `🩸 ДОЛГ -${debtDmg} (5%)`, '#ff1744', 17);
                 damageBossTarget(boss, debtDmg, false, true, 0);
               }
             }
@@ -3082,6 +3157,7 @@
         } else {
           if (boss && !boss.dead && boss.jumpZ <= 15 && Math.hypot(p.x - boss.x, p.y - boss.y) <= boss.radius + p.radius) {
             const dmg = Math.round(48 * (player.rageTimer > 0 ? 1.5 : 1));
+            if (typeof achSetDamageSource === 'function') achSetDamageSource('parry_reflect');
             damageBossTarget(boss, dmg, false, true, 18);
             projectiles.splice(i, 1);
           } else if (boss && boss.twin2 && !boss.twin2.dead && Math.hypot(p.x - boss.twin2.x, p.y - boss.twin2.y) <= boss.twin2.radius + p.radius) {
@@ -3394,8 +3470,9 @@
     }
 
     function updatePantheonButton() {
+      const total = BOSSES_DATA.length;
       const tStr = pantheonBestTime ? ` · ⏱ ${formatTime(pantheonBestTime)}` : '';
-      document.getElementById('btn-pantheon').textContent = `⚔️ ПАНТЕОН (10 ПОДРЯД) · ${pantheonBest}/10${tStr}`;
+      document.getElementById('btn-pantheon').textContent = `⚔️ ПАНТЕОН (${total} ПОДРЯД) · ${pantheonBest}/${total}${tStr}`;
     }
 
     function renderBossGrid() {
@@ -3458,6 +3535,7 @@
         if (isUnlocked && !isEquipped) {
           card.querySelector('button').addEventListener('click', () => {
             activeSkinId = skin.id;
+            if (typeof refreshPlayerSkin3D === 'function') refreshPlayerSkin3D();
             saveProgress();
             openArmory();
           });
@@ -3504,7 +3582,9 @@
     function updateMenuUI() {
       document.getElementById('chk-unlock-all').checked = unlockAllToggle;
       audio.updateTrackUI();
+      if (typeof achSyncWithRecords === 'function') achSyncWithRecords(true);
       updateArmoryButton();
+      if (typeof updateAchievementsButton === 'function') updateAchievementsButton();
       updatePantheonButton();
       applyPerfMode();
       renderBossGrid();
@@ -3545,6 +3625,10 @@
         if (e.code === 'Escape') {
           if (!document.getElementById('armory-modal').classList.contains('hidden')) {
             document.getElementById('armory-modal').classList.add('hidden');
+            return;
+          }
+          if (!document.getElementById('achievements-modal').classList.contains('hidden')) {
+            document.getElementById('achievements-modal').classList.add('hidden');
             return;
           }
           if (!document.getElementById('save-modal').classList.contains('hidden')) {
@@ -3660,6 +3744,15 @@
       document.getElementById('btn-armory-close').addEventListener('click', () => document.getElementById('armory-modal').classList.add('hidden'));
       document.getElementById('armory-modal').addEventListener('click', e => {
         if (e.target.id === 'armory-modal') document.getElementById('armory-modal').classList.add('hidden');
+      });
+
+      document.getElementById('btn-achievements').addEventListener('click', () => openAchievementsModal('all'));
+      document.getElementById('btn-ach-close').addEventListener('click', () => document.getElementById('achievements-modal').classList.add('hidden'));
+      document.getElementById('achievements-modal').addEventListener('click', e => {
+        if (e.target.id === 'achievements-modal') document.getElementById('achievements-modal').classList.add('hidden');
+      });
+      document.querySelectorAll('.ach-filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => openAchievementsModal(btn.dataset.filter));
       });
 
       document.getElementById('btn-codex').addEventListener('click', openCodexFromMenu);

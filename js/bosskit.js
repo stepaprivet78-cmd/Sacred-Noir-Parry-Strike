@@ -1,32 +1,59 @@
 // =========================================================================
-// SACRED NOIR 3D — BOSS KIT: уникальные способности боссов + хардкор
+// SACRED NOIR 3D — BOSS KIT: сигнатурные способности боссов (модульно)
+// Читает конфигурацию способности напрямую из BOSS_REGISTRY.
 // =========================================================================
 'use strict';
 
 const SIG_META = {
-  armor:    { name: '🛡️ КАМЕННАЯ КОЖА',     hint: 'Урон ×0.25 — ломай ПАРИРОВАНИЕМ!', col: '#a1a1aa', cast: 0.6 },
-  pendulum: { name: '⚖️ МАЯТНИК СМЕРТИ',    hint: 'Лезвие качается через арену — рывок сквозь него', col: '#f97316', cast: 0.9 },
-  prism:    { name: '💎 КРИСТАЛЬНЫЕ ПИЛОНЫ', hint: 'Разбей кристаллы катаной!', col: '#06b6d4', cast: 0.8 },
-  swarm:    { name: '🐝 РОЙ',               hint: 'Самонаводка — парируй или уклоняйся', col: '#eab308', cast: 0.7 },
-  mirror:   { name: '🔮 ОТРАЖЕНИЕ',         hint: 'Он повторяет твои удары и рывки!', col: '#a855f7', cast: 0.6 },
-  rewind:   { name: '⏪ ОТМОТКА ВРЕМЕНИ',    hint: 'Вбей урон, чтобы прервать!', col: '#10b981', cast: 1.15 },
-  quake:    { name: '🌋 ЗЕМЛЕТРЯСЕНИЕ',      hint: 'Перепрыгни волну рывком!', col: '#ef4444', cast: 1.0 },
-  webs:     { name: '🕸️ ПАУТИНА',           hint: 'Сети замедляют — нить рвётся рывком', col: '#ec4899', cast: 0.7 },
-  eclipse:  { name: '🌗 ЗАТМЕНИЕ',          hint: 'Не стой между Солнцем и Луной!', col: '#f59e0b', cast: 0.8 }
+  armor:     { name: '🛡️ КАМЕННАЯ КОЖА',     hint: 'Урон ×0.25 — ломай ПАРИРОВАНИЕМ!', col: '#a1a1aa', cast: 0.6 },
+  pendulum:  { name: '⚖️ МАЯТНИК СМЕРТИ',    hint: 'Лезвие качается через арену — рывок сквозь него', col: '#f97316', cast: 0.9 },
+  prism:     { name: '💎 КРИСТАЛЬНЫЕ ПИЛОНЫ', hint: 'Разбей кристаллы катаной!', col: '#06b6d4', cast: 0.8 },
+  swarm:     { name: '🐝 РОЙ',               hint: 'Самонаводка — парируй или уклоняйся', col: '#eab308', cast: 0.7 },
+  mirror:    { name: '🔮 ОТРАЖЕНИЕ',         hint: 'Он повторяет твои удары и рывки!', col: '#a855f7', cast: 0.6 },
+  rewind:    { name: '⏪ ОТМОТКА ВРЕМЕНИ',    hint: 'Вбей урон, чтобы прервать!', col: '#10b981', cast: 1.15 },
+  quake:     { name: '🌋 ЗЕМЛЕТРЯСЕНИЕ',      hint: 'Перепрыгни волну рывком!', col: '#ef4444', cast: 1.0 },
+  webs:      { name: '🕸️ ПАУТИНА',           hint: 'Сети замедляют — нить рвётся рывком', col: '#ec4899', cast: 0.7 },
+  eclipse:   { name: '🌗 ЗАТМЕНИЕ',          hint: 'Не стой между Солнцем и Луной!', col: '#f59e0b', cast: 0.8 },
+  vortex:    { name: '🌀 ВОДОВОРОТ ДУШ',     hint: 'Вихрь затягивает внутрь — рви дистанцию рывком!', col: '#38bdf8', cast: 0.85 },
+  judgement: { name: '⚔️ ПРИГОВОР НЕБЕС',    hint: 'Карающие мечи бьют с небес волнами — не стой на месте!', col: '#fb7185', cast: 0.9 }
 };
-const SIG_BY_BOSS = ['armor', 'pendulum', 'prism', 'swarm', 'mirror', 'rewind', 'quake', 'webs', 'eclipse', 'absolute'];
-const ABSOLUTE_POOL = ['quake', 'mirror', 'rewind', 'swarm', 'pendulum', 'prism'];
 
-const SIG = { banner: null, rewindFx: 0, histT: 0, histB: [], histP: [], tether: null,
-  rings: [], sweeps: [], pylons: [], webs: [], beams: [] };
+const CUSTOM_SIGS = {};
+const ABSOLUTE_POOL = ['quake', 'mirror', 'rewind', 'swarm', 'pendulum', 'prism', 'vortex', 'judgement'];
+
+function registerSignatureMeta(type, meta) {
+  if (!type || type === 'absolute') return;
+  SIG_META[type] = Object.assign({}, SIG_META[type] || {}, meta);
+}
+
+// Для регистрации полностью кастомных сигнатур будущих боссов
+function registerSignature(type, handler) {
+  if (handler.meta) registerSignatureMeta(type, handler.meta);
+  CUSTOM_SIGS[type] = handler;
+}
+
+const SIG = {
+  banner: null, rewindFx: 0, histT: 0, histB: [], histP: [], tether: null,
+  rings: [], sweeps: [], pylons: [], webs: [], beams: [], vortices: [], swords: []
+};
 
 function resetSig() {
   SIG.banner = null; SIG.rewindFx = 0; SIG.histT = 0; SIG.tether = null;
   SIG.histB.length = 0; SIG.histP.length = 0;
-  SIG.rings.length = 0; SIG.sweeps.length = 0; SIG.pylons.length = 0; SIG.webs.length = 0; SIG.beams.length = 0;
+  SIG.rings.length = 0; SIG.sweeps.length = 0; SIG.pylons.length = 0;
+  SIG.webs.length = 0; SIG.beams.length = 0; SIG.vortices.length = 0; SIG.swords.length = 0;
 }
 
 function sigArenaCenter() { return { x: ARENA.x + ARENA.w / 2, y: ARENA.y + ARENA.h / 2 }; }
+
+function getBossSigSpec(b) {
+  const cfg = typeof getBossConfig === 'function' ? getBossConfig(b.id) : null;
+  if (cfg && cfg.signature) {
+    registerSignatureMeta(cfg.signature.type, cfg.signature);
+    return cfg.signature;
+  }
+  return { type: 'armor', name: SIG_META.armor.name, hint: SIG_META.armor.hint, col: SIG_META.armor.col, cast: 0.6 };
+}
 
 function initBossSig(b) {
   resetSig();
@@ -35,24 +62,23 @@ function initBossSig(b) {
   b.sigMirror = 0;
   b.sigCast = null;
   b.sigRevived = false;
-  const key = SIG_BY_BOSS[b.id];
-  const label = key === 'absolute' ? '👑 ВСЕ ДАРЫ ПАНТЕОНА' : SIG_META[key].name;
+  const spec = getBossSigSpec(b);
+  const label = spec.type === 'absolute' ? '👑 ВСЕ ДАРЫ ПАНТЕОНА' : (spec.name || SIG_META[spec.type]?.name || '');
   const ep = document.getElementById('intro-epithet');
   if (ep) ep.textContent = `«${b.epithet}» · ${label}`;
 }
 
 function sigBanner(type) {
-  const m = SIG_META[type];
+  const m = SIG_META[type] || { name: type, hint: '', col: '#f43f5e' };
   SIG.banner = { text: m.name, hint: m.hint, col: m.col, life: 1.9, max: 1.9 };
 }
 
 function sigPick(b) {
-  const k = SIG_BY_BOSS[b.id];
-  if (k !== 'absolute') return k;
+  const spec = getBossSigSpec(b);
+  if (spec.type !== 'absolute') return spec.type;
   return ABSOLUTE_POOL[Math.floor(Math.random() * ABSOLUTE_POOL.length)];
 }
 
-// Возвращает true, если способность управляет боссом в этот кадр
 function updateBossSig(b, dt) {
   if (b.sigCast) {
     const c = b.sigCast;
@@ -83,7 +109,8 @@ function updateBossSig(b, dt) {
     b.sigTimer = (b.phase2 ? 6.5 : 9.5) + Math.random() * 1.5;
     const type = sigPick(b);
     if (type === 'eclipse' && !b.twin2) return false;
-    const cast = SIG_META[type].cast * (b.phase2 ? 0.85 : 1);
+    const meta = SIG_META[type] || { cast: 0.8 };
+    const cast = (meta.cast || 0.8) * (b.phase2 ? 0.85 : 1);
     b.sigCast = { type, timer: cast, max: cast, hpStart: b.hp };
     sigBanner(type);
     audio.windup(true);
@@ -93,6 +120,10 @@ function updateBossSig(b, dt) {
 }
 
 function sigExecute(b, type) {
+  if (CUSTOM_SIGS[type] && typeof CUSTOM_SIGS[type].execute === 'function') {
+    CUSTOM_SIGS[type].execute(b, SIG);
+    return;
+  }
   const p2 = b.phase2;
   const dd = activeContract === 'double_down' ? 1.4 : 1;
   screenShake = Math.max(screenShake, 8);
@@ -181,6 +212,27 @@ function sigExecute(b, type) {
         projectiles.push(new Projectile(b.x, b.y, Math.cos(a) * spd, Math.sin(a) * spd, 8, '#f59e0b', 1, 'orb'));
       }
     }
+  } else if (type === 'vortex') {
+    const cc = sigArenaCenter();
+    SIG.vortices.push({
+      x: cc.x, y: cc.y, r: 68, pull: p2 ? 155 : 125,
+      life: p2 ? 6.0 : 4.8, pulseT: 0.35, rot: 0, dodged: false
+    });
+    audio.gong();
+    spawnParticles(cc.x, cc.y, '#38bdf8', 26, 240, 5, 0.55);
+  } else if (type === 'judgement') {
+    const waves = p2 ? 6 : 4;
+    for (let i = 0; i < waves; i++) {
+      SIG.swords.push({
+        delay: i * 0.42,
+        warn: 0.65,
+        maxWarn: 0.65,
+        life: 0.55,
+        x: player.x, y: player.y,
+        locked: false, struck: false, dodged: false
+      });
+    }
+    audio.gong();
   }
 }
 
@@ -193,13 +245,13 @@ function sigHit(o, dmg = 1) {
   player.takeDamage(dmg);
 }
 
-// Удар игрока: зеркало копирует, кристаллы получают урон
 function sigOnPlayerAttack(step, reach, dmg) {
+  const skin = typeof getActiveSkin === 'function' ? getActiveSkin() : { hitColor: '#67e8f9' };
   for (let i = SIG.pylons.length - 1; i >= 0; i--) {
     const p = SIG.pylons[i];
     if (Math.hypot(p.x - player.x, p.y - player.y) <= reach + 24) {
       p.hp -= dmg; p.flash = 0.1;
-      spawnParticles(p.x, p.y, '#67e8f9', 8, 180, 3.5, 0.3);
+      spawnParticles(p.x, p.y, skin.hitColor || '#67e8f9', 8, 180, 3.5, 0.3);
       if (p.hp <= 0) {
         SIG.pylons.splice(i, 1);
         player.addBlood(15);
@@ -217,7 +269,7 @@ function sigOnPlayerAttack(step, reach, dmg) {
       const a = ang + (i - (n - 1) / 2) * 0.22;
       projectiles.push(new Projectile(boss.x, boss.y, Math.cos(a) * spd, Math.sin(a) * spd, 8, '#c084fc', 1, 'blade'));
     }
-    slashArcs.push({ x: boss.x, y: boss.y, angle: ang, radius: 84, step, isRage: false, isDual: true, life: 0.16, maxLife: 0.16 });
+    slashArcs.push({ x: boss.x, y: boss.y, angle: ang, radius: 84, step, isRage: false, isDual: true, bossCol: '#c084fc', life: 0.16, maxLife: 0.16 });
   }
 }
 
@@ -238,7 +290,6 @@ function updateSigWorld(dt) {
   if (SIG.banner) { SIG.banner.life -= dt; if (SIG.banner.life <= 0) SIG.banner = null; }
   if (SIG.rewindFx > 0) SIG.rewindFx -= dt;
 
-  // История для отмотки (3 сек)
   SIG.histT -= dt;
   if (SIG.histT <= 0 && !boss.dead) {
     SIG.histT = 0.1;
@@ -346,7 +397,65 @@ function updateSigWorld(dt) {
     }
   }
 
-  // Самонаводящиеся снаряды
+  for (let i = SIG.vortices.length - 1; i >= 0; i--) {
+    const v = SIG.vortices[i];
+    v.life -= dt;
+    v.rot += dt * 4.5;
+    if (alive) {
+      const dx = v.x - player.x, dy = v.y - player.y, d = Math.hypot(dx, dy) || 1;
+      if (player.dashTimer <= 0 && d > 22) {
+        player.x += (dx / d) * v.pull * dt;
+        player.y += (dy / d) * v.pull * dt;
+        clampToArena(player, player.radius + 2);
+      }
+      if (d <= v.r) sigHit(v);
+      else if (v.dodged && player.dashTimer <= 0) v.dodged = false;
+
+      v.pulseT -= dt;
+      if (v.pulseT <= 0) {
+        v.pulseT = 0.65;
+        const dd = activeContract === 'double_down' ? 1.4 : 1;
+        for (let k = 0; k < 4; k++) {
+          const a = v.rot + (k / 4) * Math.PI * 2;
+          projectiles.push(new Projectile(v.x, v.y, Math.cos(a) * 250 * dd, Math.sin(a) * 250 * dd, 7, '#38bdf8', 1, 'blade'));
+        }
+      }
+    }
+    if (v.life <= 0) SIG.vortices.splice(i, 1);
+  }
+
+  for (let i = SIG.swords.length - 1; i >= 0; i--) {
+    const sw = SIG.swords[i];
+    if (sw.delay > 0) {
+      sw.delay -= dt;
+      sw.x = player.x; sw.y = player.y;
+      continue;
+    }
+    if (!sw.locked) {
+      sw.locked = true;
+      sw.x = player.x + (Math.random() - 0.5) * 34;
+      sw.y = player.y + (Math.random() - 0.5) * 34;
+      clampToArena(sw, 42);
+    }
+    if (sw.warn > 0) {
+      sw.warn -= dt;
+      if (sw.warn <= 0 && !sw.struck) {
+        sw.struck = true;
+        audio.execute();
+        screenShake = Math.max(screenShake, 11);
+        addCraterScar(sw.x, sw.y, 52);
+        spawnParticles(sw.x, sw.y, '#fb7185', 18, 230, 4.5, 0.4);
+        if (alive && Math.hypot(player.x - sw.x, player.y - sw.y) <= 56) sigHit(sw);
+        SIG.rings.push({ x: sw.x, y: sw.y, r: 12, spd: 360, w: 18, dodged: false, hit: false });
+      }
+    } else {
+      sw.life -= dt;
+      if (sw.life <= 0) SIG.swords.splice(i, 1);
+    }
+  }
+
+  Object.values(CUSTOM_SIGS).forEach(h => { if (typeof h.update === 'function') h.update(dt, SIG); });
+
   for (const p of projectiles) {
     if (!p.homing || p.reflected || !alive) continue;
     const spd = Math.hypot(p.vx, p.vy);
@@ -357,9 +466,6 @@ function updateSigWorld(dt) {
   }
 }
 
-// =========================================================================
-// 3D VISUALS
-// =========================================================================
 function updateSig3D(show) {
   if (!R3.ready) return;
   const E = [];
@@ -372,7 +478,7 @@ function updateSig3D(show) {
     const pillar = new THREE.Mesh(R3.geo.tube, addMat('#fff', 0.35, R3.vGradTex));
     g.add(ring, ring2, pillar); g.userData = { ring, ring2, pillar }; return g;
   }, (o, c) => {
-    const u = o.userData, col = C(SIG_META[c.type].col), r = 1 - c.timer / c.max;
+    const u = o.userData, col = C((SIG_META[c.type] && SIG_META[c.type].col) || '#f43f5e'), r = 1 - c.timer / c.max;
     o.position.set(wx(boss.x), 0.08, wz(boss.y));
     u.ring.material.color.copy(col); u.ring2.material.color.copy(col); u.pillar.material.color.copy(col);
     u.ring.scale.setScalar(4.5 * (1 - r) + 1.5); u.ring.rotation.y = totalTime * 3;
@@ -418,8 +524,8 @@ function updateSig3D(show) {
     o.rotation.y = -(s.angle === undefined ? s.base : s.angle);
     u.arm.visible = u.blade.visible = active; u.warn.visible = !active;
     u.arm.scale.set(len, 0.18, 0.18); u.arm.position.x = len / 2;
-    u.blade.position.set(len, 0, 0); u.blade.rotation.z = Math.PI * 0.05;
-    u.blade.rotation.y = 0; u.blade.rotation.set(Math.PI / 2, 0, Math.PI / 2 + Math.PI * 0.05);
+    u.blade.position.set(len, 0, 0);
+    u.blade.rotation.set(Math.PI / 2, 0, Math.PI / 2 + Math.PI * 0.05);
     u.warn.scale.set(len, 1, 0.4 + Math.sin(totalTime * 20) * 0.1); u.warn.position.set(len / 2, -0.9, 0);
   });
 
@@ -489,6 +595,51 @@ function updateSig3D(show) {
     u.outer.scale.set(len, warn ? 0.08 : 0.7, warn ? 0.08 : 0.7);
     u.inner.scale.set(len, warn ? 0.001 : 0.2, warn ? 0.001 : 0.2);
   });
+
+  syncPool('sigvortex', show ? SIG.vortices : E, () => {
+    const g = new THREE.Group();
+    const disc = new THREE.Mesh(R3.geo.disc, addMat('#0284c7', 0.35));
+    const r1 = new THREE.Mesh(R3.geo.ring, addMat('#38bdf8', 0.85));
+    const r2 = new THREE.Mesh(R3.geo.thinRing, addMat('#bae6fd', 0.9));
+    const funnel = new THREE.Mesh(R3.geo.tube, addMat('#38bdf8', 0.45, R3.vGradTex));
+    g.add(disc, r1, r2, funnel); g.userData = { disc, r1, r2, funnel }; return g;
+  }, (o, v) => {
+    const u = o.userData, r = v.r * S3;
+    o.position.set(wx(v.x), 0.06, wz(v.y));
+    u.disc.scale.setScalar(r * 1.1);
+    u.r1.scale.setScalar(r); u.r1.rotation.y = v.rot;
+    u.r2.scale.setScalar(r * 1.85); u.r2.rotation.y = -v.rot * 0.7;
+    u.funnel.scale.set(r * 0.85, 5.5, r * 0.85); u.funnel.position.y = 2.75; u.funnel.rotation.y = v.rot * 1.3;
+  });
+
+  const activeSwords = show ? SIG.swords.filter(sw => sw.locked) : E;
+  syncPool('sigsword', activeSwords, () => {
+    const g = new THREE.Group();
+    const warn = new THREE.Mesh(R3.geo.thinRing, addMat('#fb7185', 0.9));
+    const fill = new THREE.Mesh(R3.geo.disc, addMat('#fb7185', 0.2));
+    const sword = new THREE.Group();
+    const bl = new THREE.Mesh(new THREE.BoxGeometry(0.28, 6.2, 0.7), glowMat('#fda4af', 2.0)); bl.position.y = 3.1;
+    const gd = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.25, 2.2), glowMat('#fbbf24', 1.8)); gd.position.y = 5.4;
+    sword.add(bl, gd);
+    g.add(warn, fill, sword); g.userData = { warn, fill, sword }; return g;
+  }, (o, sw) => {
+    const u = o.userData, rr = 56 * S3;
+    o.position.set(wx(sw.x), 0.05, wz(sw.y));
+    u.warn.scale.setScalar(rr); u.fill.scale.setScalar(rr);
+    if (sw.warn > 0) {
+      const p = 1 - sw.warn / sw.maxWarn;
+      u.sword.visible = true;
+      u.sword.position.y = (1 - p * p) * 16;
+      u.warn.visible = u.fill.visible = true;
+      u.fill.material.opacity = 0.12 + p * 0.3;
+    } else {
+      u.sword.visible = true;
+      u.sword.position.y = 0;
+      u.warn.visible = u.fill.visible = false;
+    }
+  });
+
+  Object.values(CUSTOM_SIGS).forEach(h => { if (typeof h.render3D === 'function') h.render3D(show, SIG); });
 }
 
 function drawSigOverlay(c, W, H, k) {

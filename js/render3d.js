@@ -277,6 +277,7 @@ function buildPlayer3D(skin) {
   if (R3.player) {
     R3.dyn.remove(R3.player.group); disposeTree(R3.player.group);
     R3.player.scarf.forEach(s => { R3.dyn.remove(s); disposeTree(s); });
+    if (R3.player.trailMesh) { R3.dyn.remove(R3.player.trailMesh); disposeTree(R3.player.trailMesh); }
   }
   const g = new THREE.Group();
   const body = new THREE.Group(); g.add(body);
@@ -286,54 +287,186 @@ function buildPlayer3D(skin) {
   const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.36, 0.6, 10), stdMat('#232028')); torso.position.y = 1.65; body.add(torso);
   const head = new THREE.Mesh(new THREE.SphereGeometry(0.26, 12, 10), stdMat('#2b2226')); head.position.y = 2.05; body.add(head);
   const hat = new THREE.Mesh(new THREE.ConeGeometry(0.85, 0.45, 18), stdMat('#0b0a0d', { roughness: 0.6 })); hat.position.y = 2.32; body.add(hat);
-  const trimMat = glowMat(skin.hatTrim, 1.2);
+  const trimMat = glowMat(skin.hatTrim, 1.35);
   const trim = new THREE.Mesh(new THREE.TorusGeometry(0.83, 0.035, 6, 28), trimMat); trim.rotation.x = Math.PI / 2; trim.position.y = 2.1; body.add(trim);
-  const eyeMat = glowMat(skin.glow, 2);
+  const eyeMat = glowMat(skin.glow, 2.2);
   [-0.09, 0.09].forEach(z => { const e = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.03, 0.08), eyeMat); e.position.set(0.24, 2.04, z); body.add(e); });
 
   const mkBlade = mat => {
     const p = new THREE.Group();
     const handle = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.07, 0.07), stdMat('#3f1d24')); handle.position.x = 0.18; p.add(handle);
     const guard = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.16, 0.16), stdMat('#c9a227', { metalness: 0.8 })); guard.position.x = 0.36; p.add(guard);
-    const bl = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.03, 0.1), mat); bl.position.x = 1.12; p.add(bl);
+    const bl = new THREE.Mesh(new THREE.BoxGeometry(1.55, 0.035, 0.11), mat); bl.position.x = 1.15; p.add(bl);
     return p;
   };
-  const bladeMat = glowMat(skin.blade, 1.6);
-  const dualMat = glowMat(skin.dualBlade, 1.8);
+  const bladeMat = glowMat(skin.blade, 1.9);
+  const dualMat = glowMat(skin.dualBlade, 2.1);
   const blade1 = mkBlade(bladeMat); blade1.position.set(0.15, 1.35, 0.42); body.add(blade1);
   const blade2 = mkBlade(dualMat); blade2.position.set(0.15, 1.35, -0.42); body.add(blade2);
   g.traverse(o => { if (o.isMesh) o.castShadow = true; });
 
-  const parry = new THREE.Mesh(R3.geo.thinRing, addMat('#22d3ee', 0.9)); parry.position.y = 0.35; g.add(parry);
-  const parryDome = new THREE.Mesh(new THREE.SphereGeometry(1.5, 20, 12, 0, Math.PI * 2, 0, Math.PI / 2), addMat('#22d3ee', 0.18)); g.add(parryDome);
-  const shield = new THREE.Mesh(new THREE.TorusGeometry(1.25, 0.05, 6, 16), addMat('#ff1744', 0.85)); shield.rotation.x = Math.PI / 2; shield.position.y = 1.2; g.add(shield);
-  const light = new THREE.PointLight(skin.glow, 1.1, 8); light.position.y = 1.6; g.add(light);
-  const aura = glowSprite(skin.glow, 2.6, 0.12); aura.position.y = 1.3; g.add(aura);
+  const pCol = skin.parryColor || skin.glow;
+  const parry = new THREE.Mesh(R3.geo.thinRing, addMat(pCol, 0.92)); parry.position.y = 0.35; g.add(parry);
+  const parryDome = new THREE.Mesh(new THREE.SphereGeometry(1.5, 20, 12, 0, Math.PI * 2, 0, Math.PI / 2), addMat(pCol, 0.22)); g.add(parryDome);
+  const shield = new THREE.Mesh(new THREE.TorusGeometry(1.25, 0.05, 6, 16), addMat(skin.dualBlade || '#ff1744', 0.85)); shield.rotation.x = Math.PI / 2; shield.position.y = 1.2; g.add(shield);
+  const light = new THREE.PointLight(skin.glow, 1.25, 9); light.position.y = 1.6; g.add(light);
+  const aura = glowSprite(skin.glow, 2.8, 0.16); aura.position.y = 1.3; g.add(aura);
   R3.dyn.add(g);
 
-  const scarfMat = glowMat(skin.scarf, 0.9);
+  const scarfMat = glowMat(skin.scarf, 1.05);
   const scarf = [];
   for (let i = 0; i < 7; i++) {
     const m = new THREE.Mesh(new THREE.BoxGeometry(0.26 - i * 0.02, 0.06, 0.38), scarfMat);
     m.castShadow = true; R3.dyn.add(m); scarf.push(m);
   }
-  R3.player = { skinId: skin.id, group: g, body, blade1, blade2, bladeMat, dualMat, trimMat, scarfMat, eyeMat, parry, parryDome, shield, light, aura, scarf, lastX: null, lastY: null, bob: 0, lean: 0 };
+
+  // Динамический 3D-шлейф (Ribbon Trail) кончика катаны в цвете скина
+  const TN = 16;
+  const tPos = new Float32Array(TN * 2 * 3);
+  const tCol = new Float32Array(TN * 2 * 3);
+  const idx = [];
+  for (let i = 0; i < TN - 1; i++) {
+    const a = i * 2, b = a + 1, c = a + 2, d = a + 3;
+    idx.push(a, b, c, b, d, c);
+  }
+  const tGeo = new THREE.BufferGeometry();
+  tGeo.setAttribute('position', new THREE.BufferAttribute(tPos, 3));
+  tGeo.setAttribute('color', new THREE.BufferAttribute(tCol, 3));
+  tGeo.setIndex(idx);
+  const tMat = new THREE.MeshBasicMaterial({
+    vertexColors: true, transparent: true, opacity: 0.9,
+    blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide
+  });
+  const trailMesh = new THREE.Mesh(tGeo, tMat);
+  trailMesh.frustumCulled = false;
+  R3.dyn.add(trailMesh);
+  const trailPts = [];
+  for (let i = 0; i < TN; i++) trailPts.push({ bx: 0, by: 0, bz: 0, tx: 0, ty: 0, tz: 0 });
+
+  R3.player = {
+    skinId: skin.id, group: g, body, blade1, blade2,
+    bladeMat, dualMat, trimMat, scarfMat, eyeMat,
+    parry, parryDome, shield, light, aura, scarf,
+    trailMesh, trailGeo: tGeo, trailPts, trailInit: false,
+    lastX: null, lastY: null, bob: 0, lean: 0
+  };
 }
 
-function setMatCol(m, col) { m.color.copy(C(col)); if (m.emissive) m.emissive.copy(C(col)); }
+function refreshPlayerSkin3D() {
+  if (!R3.ready || typeof getActiveSkin !== 'function') return;
+  buildPlayer3D(getActiveSkin());
+}
+
+function resetBladeTrail() {
+  if (R3.player) R3.player.trailInit = false;
+}
+
+function setMatCol(m, col, intensity) {
+  m.color.copy(C(col));
+  if (m.emissive) {
+    m.emissive.copy(C(col));
+    if (intensity !== undefined) m.emissiveIntensity = intensity;
+  }
+}
+
+const _trailBase = new THREE.Vector3();
+const _trailTip = new THREE.Vector3();
+
+function updateBladeTrail3D(P, skin, activeBoost, jumpReset) {
+  const pts = P.trailPts, TN = pts.length;
+  P.group.updateMatrixWorld(true);
+  _trailBase.set(0.45, 0, 0); P.blade1.localToWorld(_trailBase);
+  _trailTip.set(1.92, 0, 0); P.blade1.localToWorld(_trailTip);
+
+  if (!P.trailInit || jumpReset) {
+    for (let i = 0; i < TN; i++) {
+      pts[i].bx = _trailBase.x; pts[i].by = _trailBase.y; pts[i].bz = _trailBase.z;
+      pts[i].tx = _trailTip.x; pts[i].ty = _trailTip.y; pts[i].tz = _trailTip.z;
+    }
+    P.trailInit = true;
+  } else {
+    for (let i = TN - 1; i > 0; i--) {
+      pts[i].bx = pts[i - 1].bx; pts[i].by = pts[i - 1].by; pts[i].bz = pts[i - 1].bz;
+      pts[i].tx = pts[i - 1].tx; pts[i].ty = pts[i - 1].ty; pts[i].tz = pts[i - 1].tz;
+    }
+    pts[0].bx = _trailBase.x; pts[0].by = _trailBase.y; pts[0].bz = _trailBase.z;
+    pts[0].tx = _trailTip.x; pts[0].ty = _trailTip.y; pts[0].tz = _trailTip.z;
+  }
+
+  const pos = P.trailGeo.attributes.position.array;
+  const col = P.trailGeo.attributes.color.array;
+  const cTip = C(skin.slashMain || skin.blade);
+  const cGlow = C(skin.glow);
+
+  for (let i = 0; i < TN; i++) {
+    const f = Math.pow(1 - i / (TN - 1), 1.65) * activeBoost;
+    const k = i * 6;
+    pos[k] = pts[i].bx; pos[k + 1] = pts[i].by; pos[k + 2] = pts[i].bz;
+    pos[k + 3] = pts[i].tx; pos[k + 4] = pts[i].ty; pos[k + 5] = pts[i].tz;
+    col[k] = cGlow.r * f * 0.45; col[k + 1] = cGlow.g * f * 0.45; col[k + 2] = cGlow.b * f * 0.45;
+    col[k + 3] = cTip.r * f; col[k + 4] = cTip.g * f; col[k + 5] = cTip.b * f;
+  }
+  P.trailGeo.attributes.position.needsUpdate = true;
+  P.trailGeo.attributes.color.needsUpdate = true;
+}
 
 function updatePlayer3D(dt, show) {
   const P = R3.player;
-  if (!show || !player || player.dead) {
-    P.group.visible = false; P.scarf.forEach(s => s.visible = false); return;
-  }
-  P.group.visible = true;
   const skin = getActiveSkin();
+
+  // В главном меню показываем 3D-ронина в центре печати, чтобы сразу видеть выбранный скин катаны!
+  if (!show) {
+    const inMenu = typeof gameState !== 'undefined' && gameState === 'MENU';
+    P.group.visible = inMenu;
+    P.trailMesh.visible = inMenu;
+    P.scarf.forEach(s => s.visible = inMenu);
+    if (inMenu) {
+      const mt = performance.now() / 1000;
+      P.group.position.set(0, 0, 0);
+      P.group.rotation.y = mt * 0.45;
+      P.body.rotation.set(0, 0, 0);
+      P.body.position.y = Math.sin(mt * 2.2) * 0.06;
+      P.body.visible = true;
+      P.blade1.rotation.y = -0.35 + Math.sin(mt * 2.6) * 0.55;
+      P.blade2.visible = false;
+      P.parry.visible = P.parryDome.visible = P.shield.visible = false;
+      setMatCol(P.bladeMat, skin.blade, 2.2);
+      setMatCol(P.trimMat, skin.hatTrim, 1.4);
+      setMatCol(P.scarfMat, skin.scarf, 1.1);
+      setMatCol(P.eyeMat, skin.glow, 2.3);
+      P.light.color.copy(C(skin.glow)); P.light.intensity = 1.6;
+      P.aura.material.color.copy(C(skin.glow)); P.aura.material.opacity = 0.25;
+      for (let i = 0; i < P.scarf.length; i++) {
+        const m = P.scarf[i];
+        const a = -P.group.rotation.y + Math.PI;
+        m.position.set(Math.cos(a) * (0.3 + i * 0.32), 1.85 - i * 0.09 + Math.sin(mt * 5 + i) * 0.04, Math.sin(a) * (0.3 + i * 0.32));
+        m.rotation.set(0, P.group.rotation.y + Math.PI / 2, 0);
+      }
+      updateBladeTrail3D(P, skin, 0.75, false);
+    } else {
+      P.trailInit = false;
+    }
+    P.lastX = null; P.lastY = null;
+    return;
+  }
+
+  if (!player || player.dead) {
+    P.group.visible = false; P.trailMesh.visible = false; P.scarf.forEach(s => s.visible = false);
+    P.trailInit = false; P.lastX = null; P.lastY = null;
+    return;
+  }
+
+  P.group.visible = true;
+  P.trailMesh.visible = true;
   const rage = player.rageTimer > 0, dual = player.dualBladeTimer > 0;
 
   const X = wx(player.x), Z = wz(player.y);
-  let speed = 0;
-  if (P.lastX !== null && dt > 0) speed = Math.hypot(player.x - P.lastX, player.y - P.lastY) / dt;
+  let speed = 0, jumped = false;
+  if (P.lastX !== null && dt > 0) {
+    const distPx = Math.hypot(player.x - P.lastX, player.y - P.lastY);
+    speed = distPx / dt;
+    if (distPx > 140) jumped = true; // телепорт Иайдо / Казни
+  }
   P.lastX = player.x; P.lastY = player.y;
   P.group.position.set(X, 0, Z);
   P.group.rotation.y = -player.angle;
@@ -365,24 +498,31 @@ function updatePlayer3D(dt, show) {
   P.blade2.rotation.y = -P.blade1.rotation.y;
   P.blade2.visible = dual;
 
-  setMatCol(P.bladeMat, rage ? '#fde047' : (dual ? skin.dualBlade : skin.blade));
-  setMatCol(P.dualMat, rage ? '#fde047' : skin.dualBlade);
-  setMatCol(P.trimMat, rage ? '#fbbf24' : skin.hatTrim);
-  setMatCol(P.scarfMat, rage ? '#f59e0b' : skin.scarf);
+  // Сохраняем цвет выбранной катаны даже в Ярости, усиливая свечение!
+  const rageInt = rage ? 2.85 : 1.9;
+  setMatCol(P.bladeMat, dual ? skin.dualBlade : skin.blade, rageInt);
+  setMatCol(P.dualMat, skin.dualBlade, rage ? 2.9 : 2.1);
+  setMatCol(P.trimMat, skin.hatTrim, rage ? 2.1 : 1.35);
+  setMatCol(P.scarfMat, skin.scarf, rage ? 1.8 : 1.05);
+  setMatCol(P.eyeMat, skin.glow, rage ? 3.0 : 2.2);
 
   const parrying = player.parryTimer > 0;
+  const pCol = C(skin.parryColor || skin.glow);
   P.parry.visible = P.parryDome.visible = parrying;
   if (parrying) {
     const k = 1 + (0.24 - player.parryTimer) * 1.5;
     P.parry.scale.setScalar(1.6 * k); P.parryDome.scale.setScalar(k);
+    P.parry.material.color.copy(pCol);
+    P.parryDome.material.color.copy(pCol);
   }
   P.shield.visible = player.dualBladeShield;
+  P.shield.material.color.copy(C(skin.dualBlade || '#ff1744'));
   P.shield.rotation.z += dt * 3;
 
-  P.light.color.copy(C(rage ? '#fbbf24' : skin.glow));
-  P.light.intensity = 1 + (rage ? 1.2 : 0) + (dashing ? 1.5 : 0) + (parrying ? 1.5 : 0);
-  P.aura.material.color.copy(C(rage ? '#fbbf24' : skin.glow));
-  P.aura.material.opacity = dashing ? 0.75 : (rage ? 0.45 : 0.14);
+  P.light.color.copy(C(skin.glow));
+  P.light.intensity = 1.15 + (rage ? 1.35 : 0) + (dashing ? 1.5 : 0) + (parrying ? 1.5 : 0);
+  P.aura.material.color.copy(C(skin.glow));
+  P.aura.material.opacity = dashing ? 0.78 : (rage ? 0.48 : 0.16);
 
   // Шарф
   for (let i = 0; i < P.scarf.length; i++) {
@@ -395,11 +535,15 @@ function updatePlayer3D(dt, show) {
     else m.rotation.set(0, -player.angle + Math.PI / 2, 0);
   }
 
-  // Послеобразы рывка
+  // Шлейф клинка (ярче при ударе, рывке и Ярости)
+  const trailBoost = player.swingAnim > 0 ? 1.0 : (dashing ? 0.95 : (moving ? 0.55 : 0.25)) * (rage ? 1.25 : 1);
+  updateBladeTrail3D(P, skin, Math.min(1.2, trailBoost), jumped);
+
+  // Послеобразы рывка в цвете скина
   R3.ghostTimer -= dt;
   if (dashing && R3.ghostTimer <= 0) {
     R3.ghostTimer = 0.025;
-    spawnGhost(X, Z, rage ? '#fbbf24' : skin.glow);
+    spawnGhost(X, Z, skin.glow);
   }
 }
 
@@ -419,149 +563,30 @@ function updateGhosts(dt) {
 }
 
 // =========================================================================
-// BOSSES (10 уникальных 3D-моделей)
+// BOSSES (Модульная сборка 3D-модели из BOSS_REGISTRY)
 // =========================================================================
 function buildBoss3D() {
-  if (R3.boss) { R3.dyn.remove(R3.boss.group); disposeTree(R3.boss.group); R3.boss = null; }
-  const id = boss.id, col = boss.color;
+  if (R3.boss) {
+    if (R3.boss.twin) { R3.dyn.remove(R3.boss.twin.group); disposeTree(R3.boss.twin.group); }
+    R3.dyn.remove(R3.boss.group); disposeTree(R3.boss.group); R3.boss = null;
+  }
+  const col = boss.color;
   const root = new THREE.Group(), lift = new THREE.Group(); root.add(lift);
   const shell = stdMat('#1a1016', { roughness: 0.45, metalness: 0.5 });
   const glow = glowMat(col, 1.4);
   const white = glowMat('#ffffff', 1.3);
   const A = (m, x = 0, y = 0, z = 0, p = lift) => { m.position.set(x, y, z); p.add(m); return m; };
   const M = (geo, mat) => new THREE.Mesh(geo, mat);
-  let anim = () => {};
 
-  if (id === 0) { // МОНОЛИТ
-    const ob = A(M(new THREE.CylinderGeometry(0.9, 1.45, 3.8, 4), shell), 0, 1.9, 0); ob.rotation.y = Math.PI / 4;
-    const veins = A(M(new THREE.CylinderGeometry(0.93, 1.48, 3.82, 4, 3, true), new THREE.MeshBasicMaterial({ color: col, wireframe: true, transparent: true, opacity: 0.35 })), 0, 1.9, 0);
-    veins.rotation.y = Math.PI / 4;
-    const core = A(M(new THREE.SphereGeometry(0.38, 16, 12), glow), 0.8, 2.5, 0);
-    const ring = A(M(new THREE.TorusGeometry(2.0, 0.05, 6, 48), glow), 0, 2.2, 0);
-    const ring2 = A(M(new THREE.TorusGeometry(2.4, 0.03, 6, 48), glow), 0, 1.3, 0);
-    anim = t => {
-      core.scale.setScalar(1 + Math.sin(t * 5) * 0.2);
-      ring.rotation.set(Math.PI / 2 + Math.sin(t) * 0.3, t * 0.8, 0);
-      ring2.rotation.set(Math.PI / 2 + Math.cos(t * 0.7) * 0.25, 0, t);
-    };
-  } else if (id === 1) { // МАЯТНИК
-    A(M(new THREE.SphereGeometry(0.95, 18, 14), shell), 0, 2.1, 0);
-    A(M(new THREE.TorusGeometry(0.97, 0.06, 6, 32), glow), 0, 2.1, 0).rotation.x = Math.PI / 2;
-    [-0.3, 0.3].forEach(z => A(M(new THREE.BoxGeometry(0.1, 0.12, 0.25), white), 0.9, 2.3, z));
-    const piv = A(new THREE.Group(), 0, 2.1, 0);
-    const hold = new THREE.Group(); hold.rotation.x = Math.PI / 2; piv.add(hold);
-    [0, 1].forEach(k => { const c = M(new THREE.TorusGeometry(1.9, 0.14, 6, 32, 1.5), glow); c.rotation.z = k ? Math.PI - 0.75 : -0.75; hold.add(c); });
-    anim = t => { piv.rotation.y = Math.sin(t * 3) * 0.9; };
-  } else if (id === 2) { // ПРИЗМА
-    const g2 = A(new THREE.Group(), 0, 2.6, 0);
-    g2.add(M(new THREE.OctahedronGeometry(1.5), stdMat('#08202b', { metalness: 0.8, roughness: 0.2, emissive: col, emissiveIntensity: 0.15 })));
-    g2.add(M(new THREE.OctahedronGeometry(1.56), new THREE.MeshBasicMaterial({ color: col, wireframe: true })));
-    g2.add(M(new THREE.SphereGeometry(0.45, 12, 10), white));
-    const shards = [];
-    for (let i = 0; i < 4; i++) { const s = A(M(new THREE.TetrahedronGeometry(0.35), glow)); shards.push(s); }
-    anim = t => {
-      g2.rotation.y = t * 0.8; g2.position.y = 2.6 + Math.sin(t * 2) * 0.25;
-      shards.forEach((s, i) => { const a = t * 1.6 + i * Math.PI / 2; s.position.set(Math.cos(a) * 2.4, 2.6 + Math.sin(t * 3 + i) * 0.5, Math.sin(a) * 2.4); s.rotation.set(t * 2, t * 3, 0); });
-    };
-  } else if (id === 3) { // РОЙ
-    const b = A(M(new THREE.SphereGeometry(1, 18, 14), stdMat('#1c1907', { roughness: 0.5 })), 0, 1.9, 0); b.scale.set(1.15, 1.35, 1.1);
-    [1.55, 2.15].forEach(y => { const r = A(M(new THREE.TorusGeometry(1.08, 0.06, 6, 32), glow), 0, y, 0); r.rotation.x = Math.PI / 2; });
-    [-0.35, 0.35].forEach(z => A(M(new THREE.SphereGeometry(0.18, 10, 8), glow), 0.95, 2.5, z));
-    const wings = [];
-    [-1, 1].forEach(s => {
-      const piv = A(new THREE.Group(), -0.1, 2.6, s * 0.6);
-      const w = M(new THREE.PlaneGeometry(2.2, 0.9), addMat(col, 0.4)); w.rotation.x = -Math.PI / 2; w.position.set(-0.3, 0, s * 1.1); piv.add(w);
-      wings.push({ piv, s });
-    });
-    const swarm = [];
-    for (let i = 0; i < 12; i++) swarm.push({ m: A(M(new THREE.SphereGeometry(0.1, 6, 5), glow)), r: 2 + Math.random() * 1.2, sp: 1 + Math.random() * 2, ph: Math.random() * 6 });
-    anim = t => {
-      wings.forEach(w => { w.piv.rotation.x = w.s * Math.sin(t * 22) * 0.6; });
-      swarm.forEach(s => { const a = t * s.sp + s.ph; s.m.position.set(Math.cos(a) * s.r, 1.8 + Math.sin(a * 2) * 0.8, Math.sin(a) * s.r); });
-    };
-  } else if (id === 4) { // ЗЕРКАЛО
-    const mm = stdMat('#160924', { transparent: true, opacity: 0.85, emissive: col, emissiveIntensity: 0.2 });
-    A(M(new THREE.ConeGeometry(0.95, 3, 6), mm), 0, 1.5, 0);
-    A(M(new THREE.SphereGeometry(0.35, 12, 10), mm), 0, 3.15, 0);
-    A(M(new THREE.ConeGeometry(0.45, 0.75, 8), mm), 0, 3.45, 0);
-    const bm = glowMat('#f5d0fe', 1.5);
-    [0.6, -0.6].forEach(r => { const b = A(M(new THREE.BoxGeometry(0.12, 2.4, 0.06), bm), 0.75, 2.0, 0); b.rotation.x = r; });
-    const dagger = A(M(new THREE.ConeGeometry(0.12, 0.8, 4), glow));
-    anim = t => {
-      mm.opacity = 0.55 + Math.sin(t * 6) * 0.25;
-      dagger.position.set(Math.cos(t * 3) * 1.8, 2.2, Math.sin(t * 3) * 1.8); dagger.rotation.set(0, 0, -Math.PI / 2 + t * 5);
-    };
-  } else if (id === 5) { // ЧАСОВЩИК
-    A(M(new THREE.CylinderGeometry(1.2, 1.6, 0.6, 8), shell), 0, 0.3, 0);
-    A(M(new THREE.CylinderGeometry(0.35, 0.45, 1.2, 8), shell), 0, 1.1, 0);
-    const disc = A(M(new THREE.CylinderGeometry(1.6, 1.6, 0.3, 40), stdMat('#062019')), 0, 2.6, 0); disc.rotation.z = Math.PI / 2;
-    const rim = A(M(new THREE.TorusGeometry(1.6, 0.08, 8, 48), glow), 0, 2.6, 0); rim.rotation.y = Math.PI / 2;
-    for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; A(M(new THREE.BoxGeometry(0.05, 0.18, 0.08), glow), 0.17, 2.6 + Math.cos(a) * 1.35, Math.sin(a) * 1.35).rotation.x = -a; }
-    const hm = glowMat('#a7f3d0', 1.5);
-    const h1 = A(new THREE.Group(), 0.2, 2.6, 0); const m1 = M(new THREE.BoxGeometry(0.05, 1.15, 0.08), hm); m1.position.y = 0.55; h1.add(m1);
-    const h2 = A(new THREE.Group(), 0.24, 2.6, 0); const m2 = M(new THREE.BoxGeometry(0.05, 0.75, 0.12), hm); m2.position.y = 0.35; h2.add(m2);
-    anim = t => { h1.rotation.x = -t * 2; h2.rotation.x = -t * 7; };
-  } else if (id === 6) { // ТИТАН
-    const b = A(M(new THREE.SphereGeometry(1.8, 20, 16), stdMat('#240707', { roughness: 0.6 })), 0, 2.0, 0); b.scale.set(1, 1.05, 1.1);
-    [-1, 1].forEach(s => { const h = A(M(new THREE.ConeGeometry(0.32, 1.8, 8), glow), 0.3, 3.7, s * 1.0); h.rotation.x = s * 0.5; });
-    const ym = glowMat('#fde047', 2);
-    [-0.5, 0.5].forEach(z => A(M(new THREE.BoxGeometry(0.1, 0.18, 0.35), ym), 1.75, 2.4, z));
-    const arms = [];
-    [-1, 1].forEach(s => {
-      const piv = A(new THREE.Group(), 0, 2.7, s * 1.9);
-      const arm = M(new THREE.BoxGeometry(0.75, 2.2, 0.75), shell); arm.position.y = -1.0; piv.add(arm);
-      const fist = M(new THREE.SphereGeometry(0.55, 10, 8), glow); fist.position.y = -2.2; piv.add(fist);
-      arms.push({ piv, s });
-    });
-    anim = t => arms.forEach(a => { a.piv.rotation.z = Math.sin(t * 2 + a.s) * 0.4; });
-  } else if (id === 7) { // ПАУК
-    const b = A(M(new THREE.SphereGeometry(1.0, 16, 12), shell), 0.3, 1.3, 0); b.scale.set(1.3, 0.8, 1);
-    A(M(new THREE.SphereGeometry(1.2, 16, 12), stdMat('#1f0815')), -1.4, 1.6, 0);
-    const hg = A(M(new THREE.OctahedronGeometry(0.35), glowMat('#ff1744', 2)), -1.4, 2.75, 0); hg.scale.set(1, 0.4, 0.7);
-    [-0.2, 0.2].forEach(z => A(M(new THREE.SphereGeometry(0.1, 8, 6), glow), 1.5, 1.5, z));
-    const legMat = glowMat(col, 0.6);
-    const legs = [];
-    [-1, 1].forEach(s => {
-      for (let l = 0; l < 4; l++) {
-        const piv = A(new THREE.Group(), 0.9 - l * 0.45, 1.3, s * 0.5);
-        const knee = V3((1.5 - l) * 0.3, 0.9, s * 1.4), foot = V3((1.5 - l) * 0.7, -1.3, s * 2.3);
-        piv.add(seg(V3(0, 0, 0), knee, 0.08, legMat));
-        piv.add(seg(knee, foot, 0.06, legMat));
-        legs.push({ piv, ph: l + (s > 0 ? 0 : 1.5) });
-      }
-    });
-    anim = t => legs.forEach(L => { L.piv.rotation.y = Math.sin(t * 10 + L.ph) * 0.25; L.piv.rotation.x = Math.cos(t * 10 + L.ph) * 0.08; });
-  } else if (id === 8) { // БЛИЗНЕЦЫ (Солнце)
-    A(M(new THREE.SphereGeometry(1.25, 20, 16), glowMat(col, 2)), 0, 2.3, 0);
-    A(glowSprite(col, 6, 0.6), 0, 2.3, 0);
-    const rays = A(new THREE.Group(), 0, 2.3, 0);
-    for (let i = 0; i < 8; i++) {
-      const p = new THREE.Group(); p.rotation.y = (i / 8) * Math.PI * 2;
-      const c = M(new THREE.ConeGeometry(0.25, 1.1, 6), glowMat('#fde68a', 1.6)); c.rotation.z = -Math.PI / 2; c.position.x = 1.85; p.add(c);
-      rays.add(p);
-    }
-    [-0.35, 0.35].forEach(z => A(M(new THREE.BoxGeometry(0.1, 0.18, 0.2), stdMat('#261404')), 1.2, 2.5, z));
-    anim = t => { rays.rotation.y = t * 0.9; };
-  } else { // АБСОЛЮТ
-    A(M(new THREE.ConeGeometry(1.1, 2.4, 10), shell), 0, 1.2, 0);
-    A(M(new THREE.SphereGeometry(1.3, 20, 16), stdMat('#140309', { metalness: 0.6, roughness: 0.3 })), 0, 2.9, 0);
-    A(M(new THREE.SphereGeometry(0.5, 14, 10), white), 1.0, 2.9, 0);
-    const halo = A(M(new THREE.TorusGeometry(0.9, 0.07, 8, 40), glowMat('#fde047', 2)), 0, 4.6, 0); halo.rotation.x = Math.PI / 2;
-    const wings = [];
-    [-1, 1].forEach(s => {
-      for (let w = 0; w < 3; w++) {
-        const piv = A(new THREE.Group(), -0.3, 3.0, s * 0.9);
-        const f = M(new THREE.BoxGeometry(0.5, 0.08, 3.4), glow); f.position.z = s * 1.7; piv.add(f);
-        wings.push({ piv, s, w });
-      }
-    });
-    anim = t => {
-      halo.position.y = 4.6 + Math.sin(t * 2) * 0.15; halo.rotation.z = t;
-      wings.forEach(W => {
-        W.piv.rotation.x = -W.s * (0.1 + W.w * 0.38 + Math.sin(t * 4 + W.w) * 0.12);
-        W.piv.rotation.y = W.s * (W.w - 1) * 0.35;
-      });
-    };
+  const cfg = typeof getBossConfig === 'function' ? getBossConfig(boss.id) : null;
+  let anim = () => {};
+  if (cfg && typeof cfg.build3D === 'function') {
+    anim = cfg.build3D({ A, M, shell, glow, white, col, stdMat, glowMat, addMat, glowSprite, seg, V3, lift, root }) || (() => {});
+  } else {
+    // Универсальный фоллбэк для новых боссов без кастомной 3D-функции
+    const body = A(M(new THREE.OctahedronGeometry(1.4), shell), 0, 2.2, 0);
+    const ring = A(M(new THREE.TorusGeometry(2.0, 0.06, 8, 36), glow), 0, 2.2, 0);
+    anim = t => { body.rotation.y = t; ring.rotation.x = t * 1.4; };
   }
 
   lift.traverse(o => { if (o.isMesh) o.castShadow = true; });
@@ -756,7 +781,7 @@ function updatePools3D(show) {
     const glow = glowSprite('#fff', 1.8, 0.9);
     g.add(orb, blade, glow); g.userData = { m, orb, blade, glow }; return g;
   }, (o, p) => {
-    const u = o.userData, col = p.reflected ? '#22d3ee' : p.color;
+    const u = o.userData, col = p.reflected ? (p.reflectedColor || skin.parryColor || skin.glow) : p.color;
     u.m.color.copy(C(col)); u.glow.material.color.copy(C(col));
     u.orb.visible = p.shape !== 'blade'; u.blade.visible = p.shape === 'blade';
     o.position.set(wx(p.x), 1.1, wz(p.y));
@@ -767,34 +792,42 @@ function updatePools3D(show) {
   syncPool('wave', show ? playerWaves : E, () => {
     const g = new THREE.Group();
     const a = new THREE.Mesh(R3.geo.waveArc, addMat('#fff', 1));
-    const b = new THREE.Mesh(R3.geo.waveArc, addMat('#fff', 0.6)); b.scale.setScalar(1.25); b.position.x = -0.3;
-    g.add(a, b); g.userData = { a, b }; return g;
+    const b = new THREE.Mesh(R3.geo.waveArc, addMat('#fff', 0.65)); b.scale.setScalar(1.28); b.position.x = -0.3;
+    const gl = glowSprite('#fff', 2.8, 0.55);
+    g.add(a, b, gl); g.userData = { a, b, gl }; return g;
   }, (o, w) => {
     const u = o.userData;
+    const wMain = w.waveMain || skin.waveMain;
+    const wOuter = w.waveOuter || skin.waveOuter;
     o.position.set(wx(w.x), 1.0, wz(w.y));
     o.rotation.y = -w.angle;
-    o.scale.setScalar(1.5 * (1 + (0.72 - w.life) * 0.6));
-    u.a.material.color.copy(C(w.isRage ? '#fef08a' : skin.waveMain));
-    u.b.material.color.copy(C(w.isRage ? '#f59e0b' : skin.waveOuter));
+    o.scale.setScalar(1.5 * (w.isRage ? 1.18 : 1) * (1 + (0.72 - w.life) * 0.6));
+    u.a.material.color.copy(C(wMain));
+    u.b.material.color.copy(C(wOuter));
+    u.gl.material.color.copy(C(wOuter));
     const op = Math.min(1, w.life * 3);
-    u.a.material.opacity = op; u.b.material.opacity = op * 0.6;
+    u.a.material.opacity = op; u.b.material.opacity = op * (w.isRage ? 0.85 : 0.6);
+    u.gl.material.opacity = op * (w.isRage ? 0.7 : 0.45);
   });
 
   syncPool('slash', show ? slashArcs : E, () => {
     const g = new THREE.Group();
     const arc = new THREE.Mesh(R3.geo.arc, addMat('#fff', 1));
     const full = new THREE.Mesh(R3.geo.ring, addMat('#fff', 1));
-    g.add(arc, full); g.userData = { arc, full }; return g;
+    const gl = glowSprite('#fff', 3.2, 0.45);
+    g.add(arc, full, gl); g.userData = { arc, full, gl }; return g;
   }, (o, s) => {
     const u = o.userData, a = s.life / s.maxLife;
-    const col = s.isRage ? '#fde047' : (s.isDual ? skin.dualBlade : (s.step === 2 ? skin.slashFinisher : skin.slashMain));
+    const col = s.bossCol || s.col || (s.isDual ? skin.dualBlade : (s.step === 2 ? skin.slashFinisher : skin.slashMain));
     u.arc.visible = s.step !== 2; u.full.visible = s.step === 2;
     const m = s.step === 2 ? u.full : u.arc;
     m.material.color.copy(C(col)); m.material.opacity = a;
+    u.gl.material.color.copy(C(s.bossCol || skin.glow));
+    u.gl.material.opacity = a * (s.isRage ? 0.65 : 0.35);
     o.position.set(wx(s.x), 1.1, wz(s.y));
     const dir = s.step === 0 ? 1 : -1;
     o.rotation.y = -(s.angle + dir * (a - 0.5) * 0.8);
-    o.scale.setScalar(s.radius * 0.88 * S3 * (1 + (1 - a) * 0.15));
+    o.scale.setScalar(s.radius * 0.88 * S3 * (s.isRage ? 1.14 : 1) * (1 + (1 - a) * 0.15));
   });
 
   syncPool('rift', iaidoRifts, () => {
@@ -808,10 +841,12 @@ function updatePools3D(show) {
     const len = Math.hypot(x2 - x1, z2 - z1);
     o.position.set((x1 + x2) / 2, 1.0, (z1 + z2) / 2);
     o.rotation.y = -Math.atan2(z2 - z1, x2 - x1);
-    u.outer.scale.set(len, 0.5 * a, 0.5 * a);
-    u.inner.scale.set(len, 0.15 * a, 0.15 * a);
-    u.outer.material.color.copy(C(pendingOutcome === 'WIN' ? '#ff1744' : '#e879f9'));
+    u.outer.scale.set(len, 0.55 * a, 0.55 * a);
+    u.inner.scale.set(len, 0.16 * a, 0.16 * a);
+    u.outer.material.color.copy(C(r.col || skin.iaidoMain || skin.glow));
+    u.inner.material.color.copy(C(r.core || skin.iaidoCore || '#ffffff'));
     u.outer.material.opacity = a;
+    u.inner.material.opacity = a;
   });
 
   syncPool('hazard', show ? hazards : E, () => {
@@ -863,16 +898,44 @@ function updatePools3D(show) {
     blood.scale.set(1.2, 1, 0.75); blood.position.y = 0.02; g.add(blood);
     const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.3, 0.9, 4, 8), stdMat('#18181b')); body.rotation.z = Math.PI / 2; body.position.set(-0.2, 0.3, 0); g.add(body);
     const hat = new THREE.Mesh(new THREE.ConeGeometry(0.7, 0.4, 14), stdMat('#09090b')); hat.position.set(-1.1, 0.3, 0.2); hat.rotation.z = 1.2; g.add(hat);
-    const kat = new THREE.Mesh(new THREE.BoxGeometry(0.05, 1.6, 0.12), glowMat('#fda4af', 1.6)); kat.position.set(0.35, 0.8, 0); kat.rotation.z = -0.2; g.add(kat);
+    const katMat = glowMat(skin.blade || '#fda4af', 1.6);
+    const kat = new THREE.Mesh(new THREE.BoxGeometry(0.05, 1.6, 0.12), katMat); kat.position.set(0.35, 0.8, 0); kat.rotation.z = -0.2; g.add(kat);
     const guard = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.05, 0.2), stdMat('#fbbf24', { metalness: 0.8 })); guard.position.set(0.5, 1.45, 0); g.add(guard);
-    const gl = glowSprite('#ff1744', 2.2, 0.5); gl.position.set(0.4, 1.0, 0); g.add(gl);
+    const gl = glowSprite(skin.glow || '#ff1744', 2.2, 0.5); gl.position.set(0.4, 1.0, 0); g.add(gl);
     g.traverse(n => { if (n.isMesh && n !== blood) n.castShadow = true; });
-    g.userData = { gl }; return g;
+    g.userData = { gl, katMat }; return g;
   }, (o, c) => {
     o.position.set(wx(c.x), 0, wz(c.y));
     o.rotation.y = -c.angle;
+    setMatCol(o.userData.katMat, skin.blade || '#fda4af', 1.7);
+    o.userData.gl.material.color.copy(C(skin.glow || '#ff1744'));
     o.userData.gl.material.opacity = 0.35 + Math.sin(totalTime * 4) * 0.15;
   });
+
+  // 3D-вспышки попаданий, парирования и казни в цвете скина катаны
+  const hList = (show && R3.hitFlashes) ? R3.hitFlashes : E;
+  syncPool('hitflash', hList, () => {
+    const g = new THREE.Group();
+    const ring = new THREE.Mesh(R3.geo.thinRing, addMat('#fff', 0.95));
+    const spr = glowSprite('#fff', 3.5, 0.9);
+    g.add(ring, spr); g.userData = { ring, spr }; return g;
+  }, (o, hf) => {
+    const u = o.userData, a = Math.max(0, hf.life / hf.maxLife);
+    o.position.set(wx(hf.x), 1.35, wz(hf.y));
+    const sc = hf.scale * (1 + (1 - a) * 1.45);
+    u.ring.scale.setScalar(sc);
+    u.ring.material.color.copy(C(hf.col));
+    u.ring.material.opacity = a * 0.95;
+    u.spr.scale.setScalar(sc * 2.4 * a);
+    u.spr.material.color.copy(C(hf.col));
+    u.spr.material.opacity = a * 0.85;
+  });
+}
+
+function spawnHitFlash3D(x, y, col, scale = 1.2, life = 0.22) {
+  if (!R3.hitFlashes) R3.hitFlashes = [];
+  if (R3.hitFlashes.length > 20) R3.hitFlashes.shift();
+  R3.hitFlashes.push({ x, y, col, scale, life, maxLife: life });
 }
 
 // =========================================================================
@@ -1080,6 +1143,12 @@ function drawGame3D() {
   if (!R3.player || R3.player.skinId !== activeSkinId) buildPlayer3D(getActiveSkin());
   updatePlayer3D(dt, inFight);
   updateGhosts(dt);
+  if (R3.hitFlashes) {
+    for (let i = R3.hitFlashes.length - 1; i >= 0; i--) {
+      R3.hitFlashes[i].life -= dt;
+      if (R3.hitFlashes[i].life <= 0) R3.hitFlashes.splice(i, 1);
+    }
+  }
 
   if (boss !== R3.bossRef) { R3.bossRef = boss; if (boss) buildBoss3D(); }
   updateBoss3D(dt, inFight);
