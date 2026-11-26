@@ -152,10 +152,24 @@
       animation: none !important;
     }
 
-    /* Compact menu on short landscape phone screens */
+    /* Compact menu, HUD & touch controls on short landscape phone screens */
     @media (max-height: 500px) {
-      #main-menu { padding: 10px 14px !important; }
-      #main-menu h1 { font-size: 1.65rem !important; line-height: 1.1 !important; }
+      #main-menu { padding: 8px 14px !important; }
+      #main-menu h1 { font-size: 1.5rem !important; line-height: 1.08 !important; }
+      #main-menu .menu-col { gap: 0.45rem !important; padding-top: 2px !important; padding-bottom: 14px !important; }
+      #hud { padding: 6px 10px !important; }
+    }
+    @media (max-height: 440px) {
+      #joy-zone {
+        transform: scale(0.82);
+        transform-origin: bottom left;
+        bottom: calc(14px + env(safe-area-inset-bottom, 0px)) !important;
+      }
+      #touch-actions {
+        transform: scale(0.82);
+        transform-origin: bottom right;
+        bottom: calc(14px + env(safe-area-inset-bottom, 0px)) !important;
+      }
     }
 
     /* Boss Intro Letterbox */
@@ -289,7 +303,7 @@
       </div>
 
       <!-- Right Action Buttons (Thumb-Arc Layout) -->
-      <div class="pointer-events-auto absolute w-[196px] h-[196px]" style="bottom: calc(12px + env(safe-area-inset-bottom, 0px)); right: calc(14px + env(safe-area-inset-right, 0px));">
+      <div id="touch-actions" class="pointer-events-auto absolute w-[196px] h-[196px]" style="bottom: calc(12px + env(safe-area-inset-bottom, 0px)); right: calc(14px + env(safe-area-inset-right, 0px));">
         <!-- Main Attack (Bottom-Right, under thumb rest) -->
         <button id="tbtn-attack" class="touch-btn absolute bottom-1 right-1 w-[82px] h-[82px] rounded-full bg-rose-900/90 border-2 border-rose-400 backdrop-blur-sm flex flex-col items-center justify-center text-white shadow-xl">
           <span class="text-sm font-black leading-none">УДАР</span>
@@ -319,10 +333,10 @@
     </div>
 
     <!-- MAIN MENU (MINIMALIST SOULS-STYLE OVER LIVE 3D ARENA) -->
-    <div id="main-menu" class="scrollable-panel absolute inset-0 z-30 flex items-start sm:items-center justify-center sm:justify-start overflow-y-auto bg-gradient-to-r from-[#070205]/95 via-[#070205]/65 sm:via-[#070205]/45 to-[#070205]/25 sm:to-transparent p-4 sm:p-8 md:pl-14">
+    <div id="main-menu" class="scrollable-panel absolute inset-0 z-30 flex items-start justify-center sm:justify-start overflow-y-auto bg-gradient-to-r from-[#070205]/95 via-[#070205]/65 sm:via-[#070205]/45 to-[#070205]/25 sm:to-transparent p-4 sm:p-8 md:pl-14">
       <div class="fixed inset-0 blood-vignette pointer-events-none"></div>
 
-      <div class="relative z-10 w-full max-w-sm flex flex-col gap-3.5 py-2 pb-8">
+      <div class="menu-col relative z-10 w-full max-w-sm flex flex-col gap-3.5 py-2 pb-8 my-auto">
         <!-- Title Header -->
         <div class="text-center sm:text-left">
           <div class="text-[10px] font-black tracking-[0.42em] text-rose-500/90 uppercase mb-1">
@@ -383,7 +397,7 @@
     </div>
 
     <!-- BOSS SELECTION MODAL -->
-    <div id="bosses-modal" class="scrollable-panel hidden absolute inset-0 z-[44] bg-black/85 backdrop-blur-sm flex items-start sm:items-center justify-center p-3 sm:p-5 overflow-y-auto">
+    <div id="bosses-modal" class="scrollable-panel hidden absolute inset-0 z-[44] bg-black/85 backdrop-blur-sm flex items-start justify-center p-3 sm:p-5 overflow-y-auto">
       <div class="w-full max-w-5xl max-h-[92vh] flex flex-col bg-[#0d0508] border-2 border-rose-800/85 rounded-2xl p-4 sm:p-6 shadow-[0_0_50px_rgba(225,29,72,0.3)]">
         <div class="flex flex-wrap items-center justify-between gap-2 mb-3 shrink-0">
           <div>
@@ -403,7 +417,7 @@
     </div>
 
     <!-- SETTINGS & TOOLS MODAL -->
-    <div id="settings-modal" class="scrollable-panel hidden absolute inset-0 z-[44] bg-black/85 backdrop-blur-sm flex items-start sm:items-center justify-center p-4 overflow-y-auto">
+    <div id="settings-modal" class="scrollable-panel hidden absolute inset-0 z-[44] bg-black/85 backdrop-blur-sm flex items-start justify-center p-4 overflow-y-auto">
       <div class="w-full max-w-md bg-[#0d0508] border-2 border-zinc-700/90 rounded-2xl p-5 shadow-2xl flex flex-col gap-3">
         <div class="flex items-center justify-between">
           <div>
@@ -438,7 +452,7 @@
     </div>
 
     <!-- BLOOD CONTRACT MODAL -->
-    <div id="contract-modal" class="scrollable-panel hidden absolute inset-0 z-[45] bg-black/85 backdrop-blur-sm flex items-start sm:items-center justify-center p-4 overflow-y-auto">
+    <div id="contract-modal" class="scrollable-panel hidden absolute inset-0 z-[45] bg-black/85 backdrop-blur-sm flex items-start justify-center p-4 overflow-y-auto">
       <div class="w-full max-w-2xl bg-[#0d0508] border-2 border-rose-800/90 rounded-2xl p-5 sm:p-6 shadow-[0_0_50px_rgba(225,29,72,0.35)]">
         <div class="text-center mb-4">
           <div class="text-[10px] font-black tracking-[0.4em] text-rose-500 uppercase">ДОГОВОР С БЕЗДНОЙ · ОТКАЗ ВОЗМОЖЕН</div>
@@ -484,7 +498,7 @@
     </div>
 
     <!-- TALISMANS MODAL (2 BUILD SLOTS) -->
-    <div id="talismans-modal" class="scrollable-panel hidden absolute inset-0 z-[45] bg-black/85 backdrop-blur-sm flex items-start sm:items-center justify-center p-4 overflow-y-auto">
+    <div id="talismans-modal" class="scrollable-panel hidden absolute inset-0 z-[45] bg-black/85 backdrop-blur-sm flex items-start justify-center p-4 overflow-y-auto">
       <div class="w-full max-w-2xl bg-[#0d0508] border-2 border-emerald-800/90 rounded-2xl p-5 sm:p-6 shadow-2xl">
         <div class="flex items-center justify-between mb-3">
           <div>
@@ -498,7 +512,7 @@
     </div>
 
     <!-- ARMORY MODAL -->
-    <div id="armory-modal" class="scrollable-panel hidden absolute inset-0 z-[45] bg-black/85 backdrop-blur-sm flex items-start sm:items-center justify-center p-4 overflow-y-auto">
+    <div id="armory-modal" class="scrollable-panel hidden absolute inset-0 z-[45] bg-black/85 backdrop-blur-sm flex items-start justify-center p-4 overflow-y-auto">
       <div class="w-full max-w-2xl bg-[#0d0508] border-2 border-rose-800/90 rounded-2xl p-5 sm:p-6 shadow-2xl">
         <div class="flex items-center justify-between mb-4">
           <div>
@@ -512,20 +526,20 @@
     </div>
 
     <!-- PAUSE & CODEX MODAL -->
-    <div id="pause-codex-modal" class="scrollable-panel hidden absolute inset-0 z-[45] bg-black/85 backdrop-blur-sm flex items-start sm:items-center justify-center p-4 overflow-y-auto">
-      <div class="w-full max-w-3xl bg-[#0d0508] border-2 border-cyan-800/80 rounded-2xl p-5 sm:p-6 shadow-2xl">
-        <div class="flex items-center justify-between mb-4">
+    <div id="pause-codex-modal" class="scrollable-panel hidden absolute inset-0 z-[45] bg-black/85 backdrop-blur-sm flex items-start justify-center p-2.5 sm:p-4 overflow-y-auto">
+      <div class="w-full max-w-3xl max-h-[92dvh] flex flex-col bg-[#0d0508] border-2 border-cyan-800/80 rounded-2xl p-4 sm:p-6 shadow-2xl my-auto">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3 shrink-0">
           <div>
             <div id="codex-subtitle" class="text-[10px] font-black tracking-[0.35em] text-cyan-400 uppercase">ШПАРГАЛКА БОЕВОЙ СИСТЕМЫ</div>
-            <h2 id="codex-title" class="font-serif-noir text-2xl font-black text-zinc-100 tracking-widest">📖 КОДЕКС МЕХАНИК</h2>
+            <h2 id="codex-title" class="font-serif-noir text-lg sm:text-2xl font-black text-zinc-100 tracking-widest">📖 КОДЕКС МЕХАНИК</h2>
           </div>
           <div class="flex items-center gap-2">
-            <button id="btn-codex-resume" class="hidden px-4 py-2 rounded-lg bg-rose-700 hover:bg-rose-600 text-xs font-black text-white">▶ ПРОДОЛЖИТЬ</button>
-            <button id="btn-codex-menu" class="px-3.5 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-xs font-bold text-zinc-200">✕ В МЕНЮ</button>
+            <button id="btn-codex-resume" class="hidden px-3.5 py-2 rounded-lg bg-rose-700 hover:bg-rose-600 text-xs font-black text-white">▶ ПРОДОЛЖИТЬ</button>
+            <button id="btn-codex-menu" class="px-3 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-xs font-bold text-zinc-200">✕ В МЕНЮ</button>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 text-xs">
+        <div class="scrollable-panel overflow-y-auto pr-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 text-xs">
           <div class="p-3 rounded-xl bg-zinc-950/90 border border-rose-900/70">
             <div class="font-black text-rose-300 mb-1">🩸 ШКАЛА КРОВИ И ИАЙДО</div>
             <p class="text-zinc-400 leading-relaxed">Копится ударами катаной в упор, парированием и идеальными уворотами. 3-й удар комбо тратит <b>25🩸</b> на Кровавую Волну. <b>Иайдо (Q/E/L)</b> за <b>50🩸</b> рассекает босса и сносит все снаряды.</p>
@@ -567,7 +581,7 @@
     </div>
 
     <!-- ACHIEVEMENTS MODAL -->
-    <div id="achievements-modal" class="scrollable-panel hidden absolute inset-0 z-[45] bg-black/85 backdrop-blur-sm flex items-start sm:items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div id="achievements-modal" class="scrollable-panel hidden absolute inset-0 z-[45] bg-black/85 backdrop-blur-sm flex items-start justify-center p-3 sm:p-4 overflow-y-auto">
       <div class="w-full max-w-4xl max-h-[90vh] flex flex-col bg-[#0d0508] border-2 border-amber-700/85 rounded-2xl p-4 sm:p-6 shadow-[0_0_50px_rgba(245,158,11,0.25)]">
         <div class="flex items-center justify-between gap-2 mb-3 shrink-0">
           <div>
@@ -600,7 +614,7 @@
     <div id="ach-toast-container" class="pointer-events-none fixed top-14 right-3 sm:right-5 z-[60] flex flex-col gap-2 items-end"></div>
 
     <!-- SAVE / EXPORT MODAL -->
-    <div id="save-modal" class="scrollable-panel hidden absolute inset-0 z-[45] bg-black/85 backdrop-blur-sm flex items-start sm:items-center justify-center p-4 overflow-y-auto">
+    <div id="save-modal" class="scrollable-panel hidden absolute inset-0 z-[45] bg-black/85 backdrop-blur-sm flex items-start justify-center p-4 overflow-y-auto">
       <div class="w-full max-w-lg bg-[#0d0508] border-2 border-emerald-800/80 rounded-2xl p-5 shadow-2xl">
         <div class="flex items-center justify-between mb-3">
           <div>
@@ -625,7 +639,7 @@
     </div>
 
     <!-- RESULT MODAL (VICTORY / DEFEAT / PANTHEON) -->
-    <div id="result-modal" class="scrollable-panel hidden absolute inset-0 z-[45] bg-black/85 backdrop-blur-sm flex items-start sm:items-center justify-center p-4 overflow-y-auto">
+    <div id="result-modal" class="scrollable-panel hidden absolute inset-0 z-[45] bg-black/85 backdrop-blur-sm flex items-start justify-center p-4 overflow-y-auto">
       <div class="w-full max-w-md bg-[#0d0508] border-2 border-rose-800/90 rounded-2xl p-6 text-center shadow-[0_0_50px_rgba(225,29,72,0.35)]">
         <div id="result-subtitle" class="text-[10px] font-black tracking-[0.4em] text-rose-400 uppercase mb-1">ИТОГ СХВАТКИ</div>
         <h2 id="result-title" class="font-serif-noir text-3xl font-black text-zinc-100 tracking-widest mb-3">ПОБЕДА</h2>
@@ -662,7 +676,7 @@
     </div>
 
     <!-- TOWER BOON SELECTION MODAL (1 OF 3) -->
-    <div id="tower-boon-modal" class="scrollable-panel hidden absolute inset-0 z-[48] bg-black/90 backdrop-blur-sm flex items-start sm:items-center justify-center p-4 overflow-y-auto">
+    <div id="tower-boon-modal" class="scrollable-panel hidden absolute inset-0 z-[48] bg-black/90 backdrop-blur-sm flex items-start justify-center p-4 overflow-y-auto">
       <div class="w-full max-w-3xl bg-[#0d0508] border-2 border-fuchsia-600/85 rounded-2xl p-5 sm:p-6 shadow-[0_0_50px_rgba(192,38,211,0.35)]">
         <div class="text-center mb-4">
           <div class="text-[10px] font-black tracking-[0.4em] text-fuchsia-400 uppercase">БЕСКОНЕЧНАЯ БАШНЯ · ДАРЫ БЕЗДНЫ</div>
@@ -3009,21 +3023,27 @@
     }
 
     function triggerBossSlain() {
+      if (pendingOutcome) return;
       const skin = getActiveSkin();
       pendingOutcome = 'WIN';
+      clashState = null;
+      hitStop = 0;
       endDelayTimer = lowGfx ? 0.85 : 1.25;
       projectiles.length = 0;
       hazards.length = 0;
       floorBlades.length = 0;
-      boss.lasers = [];
-      resetSig();
-      startCinematic(boss.x, boss.y, lowGfx ? 1.0 : 1.5, 'slain');
-      audio.execute();
+      if (boss) boss.lasers = [];
+      try { resetSig(); } catch (e) { console.error('resetSig error:', e); }
+      try { if (boss) startCinematic(boss.x, boss.y, lowGfx ? 1.0 : 1.5, 'slain'); } catch (e) { console.error('startCinematic error:', e); }
+      try { audio.execute(); } catch (e) {}
       screenShake = lowGfx ? 10 : 20;
-      iaidoRifts.push({ x1: boss.x - 140, y1: boss.y - 90, x2: boss.x + 140, y2: boss.y + 90, col: skin.slashFinisher || skin.glow, core: skin.iaidoCore || '#ffffff', life: lowGfx ? 0.85 : 1.2, maxLife: lowGfx ? 0.85 : 1.2 });
-      if (typeof spawnHitFlash3D === 'function') spawnHitFlash3D(boss.x, boss.y, skin.glow, 2.8, 0.5);
-      if (typeof achOnBossKilled === 'function') achOnBossKilled(currentBossIdx);
-      document.getElementById('slain-banner').classList.remove('hidden');
+      if (boss) {
+        iaidoRifts.push({ x1: boss.x - 140, y1: boss.y - 90, x2: boss.x + 140, y2: boss.y + 90, col: skin.slashFinisher || skin.glow, core: skin.iaidoCore || '#ffffff', life: lowGfx ? 0.85 : 1.2, maxLife: lowGfx ? 0.85 : 1.2 });
+        if (typeof spawnHitFlash3D === 'function') spawnHitFlash3D(boss.x, boss.y, skin.glow, 2.8, 0.5);
+      }
+      try { if (typeof achOnBossKilled === 'function') achOnBossKilled(currentBossIdx); } catch (e) { console.error('achOnBossKilled error:', e); }
+      const sb = document.getElementById('slain-banner');
+      if (sb) sb.classList.remove('hidden');
     }
 
     function openContractModal(bossIdx) {
@@ -3775,8 +3795,9 @@
     }
 
     function gameLoop(ts) {
+      requestAnimationFrame(gameLoop);
       if (!lastFrameTime) lastFrameTime = ts;
-      const elapsed = (ts - lastFrameTime) / 1000;
+      const elapsed = Math.max(0, (ts - lastFrameTime) / 1000);
       const rawDt = Math.min(0.05, elapsed);
       const realDt = Math.min(0.25, elapsed);
       lastFrameTime = ts;
@@ -3785,11 +3806,17 @@
         if (_fpsAcc >= 0.5) { _fpsVal = Math.round(_fpsFrames / _fpsAcc); _fpsFrames = 0; _fpsAcc = 0; }
       }
 
-      if (gameState === 'PLAYING') {
-        updateGame(rawDt, realDt);
+      try {
+        if (gameState === 'PLAYING') {
+          updateGame(rawDt, realDt);
+        }
+        drawGame3D();
+      } catch (err) {
+        console.error('gameLoop error:', err);
+        if (pendingOutcome === 'WIN' && gameState === 'PLAYING') {
+          try { finishFight('WIN'); } catch (e2) { console.error(e2); }
+        }
       }
-      drawGame3D();
-      requestAnimationFrame(gameLoop);
     }
 
     // =========================================================================
