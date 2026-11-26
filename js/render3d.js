@@ -322,28 +322,72 @@ function buildPlayer3D(skin) {
     R3.player.scarf.forEach(s => { R3.dyn.remove(s); disposeTree(s); });
     if (R3.player.trailMesh) { R3.dyn.remove(R3.player.trailMesh); disposeTree(R3.player.trailMesh); }
   }
+  const styleId = typeof activeStyleId !== 'undefined' ? activeStyleId : 'ronin';
   const g = new THREE.Group();
   const body = new THREE.Group(); g.add(body);
   const dark = stdMat('#17161b', { roughness: 0.85 });
-
-  const cloak = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.72, 1.5, 10), dark); cloak.position.y = 0.75; body.add(cloak);
-  const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.36, 0.6, 10), stdMat('#232028')); torso.position.y = 1.65; body.add(torso);
-  const head = new THREE.Mesh(new THREE.SphereGeometry(0.26, 12, 10), stdMat('#2b2226')); head.position.y = 2.05; body.add(head);
-  const hat = new THREE.Mesh(new THREE.ConeGeometry(0.85, 0.45, 18), stdMat('#0b0a0d', { roughness: 0.6 })); hat.position.y = 2.32; body.add(hat);
   const trimMat = glowMat(skin.hatTrim, 1.35);
-  const trim = new THREE.Mesh(new THREE.TorusGeometry(0.83, 0.035, 6, 28), trimMat); trim.rotation.x = Math.PI / 2; trim.position.y = 2.1; body.add(trim);
   const eyeMat = glowMat(skin.glow, 2.2);
-  [-0.09, 0.09].forEach(z => { const e = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.03, 0.08), eyeMat); e.position.set(0.24, 2.04, z); body.add(e); });
+
+  if (styleId === 'executioner') {
+    // 🔥 ПАЛАЧ: крупный массивный воин в броне и железной маске с рогами
+    const armor = stdMat('#1c1519', { roughness: 0.45, metalness: 0.65 });
+    const cloak = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.92, 1.75, 10), dark); cloak.position.y = 0.88; body.add(cloak);
+    const chest = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.85, 1.15), armor); chest.position.y = 1.95; body.add(chest);
+    [-0.72, 0.72].forEach(z => {
+      const pauldron = new THREE.Mesh(new THREE.SphereGeometry(0.4, 10, 8), armor);
+      pauldron.scale.set(1, 0.85, 1.1); pauldron.position.set(0, 2.25, z); body.add(pauldron);
+    });
+    const head = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.34, 0.56, 8), stdMat('#27272a', { metalness: 0.8, roughness: 0.3 }));
+    head.position.y = 2.6; body.add(head);
+    const maskPlate = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.48, 0.44), trimMat);
+    maskPlate.position.set(0.28, 2.58, 0); body.add(maskPlate);
+    [-0.22, 0.22].forEach(z => {
+      const horn = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.52, 6), trimMat);
+      horn.position.set(0.05, 2.98, z); horn.rotation.x = z > 0 ? 0.45 : -0.45; body.add(horn);
+    });
+    [-0.1, 0.1].forEach(z => { const e = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.04, 0.1), eyeMat); e.position.set(0.35, 2.62, z); body.add(e); });
+  } else if (styleId === 'phantom') {
+    // 💨 ПРИЗРАК: стройный, манёвренный ассасин в капюшоне-тени
+    const shadowMat = stdMat('#0f0c18', { roughness: 0.7, transparent: true, opacity: 0.88 });
+    const cloak = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.58, 1.4, 10), shadowMat); cloak.position.y = 0.7; body.add(cloak);
+    const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.28, 0.58, 10), stdMat('#1b1626')); torso.position.y = 1.55; body.add(torso);
+    const hood = new THREE.Mesh(new THREE.ConeGeometry(0.42, 0.72, 10), shadowMat); hood.position.set(-0.04, 2.08, 0); hood.rotation.z = 0.18; body.add(hood);
+    const visor = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.06, 0.28), eyeMat); visor.position.set(0.22, 1.96, 0); body.add(visor);
+    const band = new THREE.Mesh(new THREE.TorusGeometry(0.32, 0.028, 6, 20), trimMat); band.rotation.x = Math.PI / 2; band.position.y = 1.85; body.add(band);
+  } else {
+    // ⚔️ РОНИН: классический самурай в широкополой шляпе-касе с двумя катанами
+    const cloak = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.72, 1.5, 10), dark); cloak.position.y = 0.75; body.add(cloak);
+    const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.36, 0.6, 10), stdMat('#232028')); torso.position.y = 1.65; body.add(torso);
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.26, 12, 10), stdMat('#2b2226')); head.position.y = 2.05; body.add(head);
+    const hat = new THREE.Mesh(new THREE.ConeGeometry(0.85, 0.45, 18), stdMat('#0b0a0d', { roughness: 0.6 })); hat.position.y = 2.32; body.add(hat);
+    const trim = new THREE.Mesh(new THREE.TorusGeometry(0.83, 0.035, 6, 28), trimMat); trim.rotation.x = Math.PI / 2; trim.position.y = 2.1; body.add(trim);
+    [-0.09, 0.09].forEach(z => { const e = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.03, 0.08), eyeMat); e.position.set(0.24, 2.04, z); body.add(e); });
+  }
 
   const mkBlade = mat => {
     const p = new THREE.Group();
-    const handle = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.07, 0.07), stdMat('#3f1d24')); handle.position.x = 0.18; p.add(handle);
-    const guard = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.16, 0.16), stdMat('#c9a227', { metalness: 0.8 })); guard.position.x = 0.36; p.add(guard);
-    const bl = new THREE.Mesh(new THREE.BoxGeometry(1.55, 0.035, 0.11), mat); bl.position.x = 1.15; p.add(bl);
+    if (styleId === 'executioner') {
+      // Огромный двуручный тесак Палача
+      const handle = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.09, 0.09), stdMat('#3f1d24')); handle.position.x = 0.25; p.add(handle);
+      const guard = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.22, 0.34), stdMat('#c9a227', { metalness: 0.85 })); guard.position.x = 0.52; p.add(guard);
+      const bl = new THREE.Mesh(new THREE.BoxGeometry(2.35, 0.06, 0.32), mat); bl.position.x = 1.7; p.add(bl);
+      const tip = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.5, 4).rotateZ(-Math.PI / 2), mat); tip.position.x = 3.05; p.add(tip);
+    } else if (styleId === 'phantom') {
+      // Короткий клинок-кинжал Призрака
+      const handle = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.06, 0.06), stdMat('#1f1a24')); handle.position.x = 0.12; p.add(handle);
+      const guard = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.12, 0.12), stdMat('#94a3b8', { metalness: 0.8 })); guard.position.x = 0.25; p.add(guard);
+      const bl = new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.028, 0.085), mat); bl.position.x = 0.72; p.add(bl);
+    } else {
+      // Классическая катана Ронина
+      const handle = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.07, 0.07), stdMat('#3f1d24')); handle.position.x = 0.18; p.add(handle);
+      const guard = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.16, 0.16), stdMat('#c9a227', { metalness: 0.8 })); guard.position.x = 0.36; p.add(guard);
+      const bl = new THREE.Mesh(new THREE.BoxGeometry(1.55, 0.035, 0.11), mat); bl.position.x = 1.15; p.add(bl);
+    }
     return p;
   };
   const bladeMat = glowMat(skin.blade, 1.9);
-  const dualMat = glowMat(skin.dualBlade, 2.1);
+  const dualMat = glowMat(styleId === 'phantom' ? skin.blade : skin.dualBlade, 2.1);
   const blade1 = mkBlade(bladeMat); blade1.position.set(0.15, 1.35, 0.42); body.add(blade1);
   const blade2 = mkBlade(dualMat); blade2.position.set(0.15, 1.35, -0.42); body.add(blade2);
   g.traverse(o => { if (o.isMesh) o.castShadow = true; });
@@ -390,7 +434,7 @@ function buildPlayer3D(skin) {
   for (let i = 0; i < TN; i++) trailPts.push({ bx: 0, by: 0, bz: 0, tx: 0, ty: 0, tz: 0 });
 
   R3.player = {
-    skinId: skin.id, group: g, body, blade1, blade2,
+    skinId: skin.id, styleId, group: g, body, blade1, blade2,
     bladeMat, dualMat, trimMat, scarfMat, eyeMat,
     parry, parryDome, shield, light, aura, scarf,
     trailMesh, trailGeo: tGeo, trailPts, trailInit: false,
@@ -421,8 +465,9 @@ const _trailTip = new THREE.Vector3();
 function updateBladeTrail3D(P, skin, activeBoost, jumpReset) {
   const pts = P.trailPts, TN = pts.length;
   P.group.updateMatrixWorld(true);
+  const tipX = P.styleId === 'executioner' ? 3.1 : (P.styleId === 'phantom' ? 1.18 : 1.92);
   _trailBase.set(0.45, 0, 0); P.blade1.localToWorld(_trailBase);
-  _trailTip.set(1.92, 0, 0); P.blade1.localToWorld(_trailTip);
+  _trailTip.set(tipX, 0, 0); P.blade1.localToWorld(_trailTip);
 
   if (!P.trailInit || jumpReset) {
     for (let i = 0; i < TN; i++) {
@@ -474,7 +519,8 @@ function updatePlayer3D(dt, show) {
       P.body.position.y = Math.sin(mt * 2.2) * 0.06;
       P.body.visible = true;
       P.blade1.rotation.y = -0.35 + Math.sin(mt * 2.6) * 0.55;
-      P.blade2.visible = false;
+      P.blade2.rotation.y = -P.blade1.rotation.y;
+      P.blade2.visible = P.styleId === 'phantom' || P.styleId === 'ronin';
       P.parry.visible = P.parryDome.visible = P.shield.visible = false;
       setMatCol(P.bladeMat, skin.blade, 2.2);
       setMatCol(P.trimMat, skin.hatTrim, 1.4);
@@ -542,7 +588,7 @@ function updatePlayer3D(dt, show) {
     P.blade1.rotation.y += (-0.45 - P.blade1.rotation.y) * Math.min(1, dt * 12);
   }
   P.blade2.rotation.y = -P.blade1.rotation.y;
-  P.blade2.visible = dual;
+  P.blade2.visible = dual || P.styleId === 'phantom' || P.styleId === 'ronin';
 
   // Сохраняем цвет выбранной катаны даже в Ярости, усиливая свечение!
   const rageInt = rage ? 2.85 : 1.9;
@@ -1066,12 +1112,41 @@ function updateCamera3D(dt, inFight) {
       R3.camT.x += (tx - R3.camT.x) * k; R3.camT.z += (tz - R3.camT.z) * k;
       R3.camDist += (dist - R3.camDist) * k;
     }
-    cam.position.set(R3.camT.x, R3.camDist * 0.86, R3.camT.z + R3.camDist * 0.56);
-    if (screenShake > 0) {
-      const s = screenShake * 0.02;
-      cam.position.x += (Math.random() - 0.5) * s; cam.position.y += (Math.random() - 0.5) * s; cam.position.z += (Math.random() - 0.5) * s;
+    const isAction = typeof cameraMode !== 'undefined' && cameraMode === 'action';
+    if (isAction && player) {
+      // Камера за спиной героя: при захвате мыши (Pointer Lock) — свободное вращение мышкой, иначе Lock-On на босса
+      const px = wx(player.x), pz = wz(player.y);
+      const mouseLook = typeof document !== 'undefined' && document.pointerLockElement === canvas;
+      if (R3.actionYaw === undefined) R3.actionYaw = -Math.PI / 2;
+      if (R3.actionPitch === undefined) R3.actionPitch = 0.42;
+      if (!mouseLook && boss && !boss.dead) {
+        const targetYaw = Math.atan2(wz(boss.y) - pz, wx(boss.x) - px);
+        R3.actionYaw = lerpAngle(R3.actionYaw, targetYaw, 1 - Math.exp(-dt * 6));
+      }
+      const dist3d = 14.5;
+      const horiz = Math.cos(R3.actionPitch) * dist3d;
+      const camH = Math.max(2.2, Math.sin(R3.actionPitch) * dist3d + 1.5);
+      const desiredX = px - Math.cos(R3.actionYaw) * horiz;
+      const desiredZ = pz - Math.sin(R3.actionYaw) * horiz;
+      const kCam = 1 - Math.exp(-dt * (mouseLook ? 18 : 8));
+      cam.position.x += (desiredX - cam.position.x) * kCam;
+      cam.position.y += (camH - cam.position.y) * kCam;
+      cam.position.z += (desiredZ - cam.position.z) * kCam;
+      if (screenShake > 0) {
+        const s = screenShake * 0.02;
+        cam.position.x += (Math.random() - 0.5) * s; cam.position.y += (Math.random() - 0.5) * s; cam.position.z += (Math.random() - 0.5) * s;
+      }
+      const lookX = (!mouseLook && boss && !boss.dead) ? px + (wx(boss.x) - px) * 0.42 : px + Math.cos(R3.actionYaw) * 8;
+      const lookZ = (!mouseLook && boss && !boss.dead) ? pz + (wz(boss.y) - pz) * 0.42 : pz + Math.sin(R3.actionYaw) * 8;
+      cam.lookAt(lookX, 1.6, lookZ);
+    } else {
+      cam.position.set(R3.camT.x, R3.camDist * 0.86, R3.camT.z + R3.camDist * 0.56);
+      if (screenShake > 0) {
+        const s = screenShake * 0.02;
+        cam.position.x += (Math.random() - 0.5) * s; cam.position.y += (Math.random() - 0.5) * s; cam.position.z += (Math.random() - 0.5) * s;
+      }
+      cam.lookAt(R3.camT.x, 0, R3.camT.z);
     }
-    cam.lookAt(R3.camT.x, 0, R3.camT.z);
     updateCinematic(dt);
     resetCineFov();
   } else {
@@ -1186,7 +1261,8 @@ function drawGame3D() {
 
   const inFight = !!(player && boss && gameState !== 'MENU');
 
-  if (!R3.player || R3.player.skinId !== activeSkinId) buildPlayer3D(getActiveSkin());
+  const curStyle = typeof activeStyleId !== 'undefined' ? activeStyleId : 'ronin';
+  if (!R3.player || R3.player.skinId !== activeSkinId || R3.player.styleId !== curStyle) buildPlayer3D(getActiveSkin());
   updatePlayer3D(dt, inFight);
   updateGhosts(dt);
   if (R3.hitFlashes) {

@@ -682,6 +682,186 @@ registerBoss({
   }
 });
 
+// =========================================================================
+// XXI — XXX: ЛЕГЕНДАРНЫЙ ПАНТЕОН (30 БОССОВ)
+// =========================================================================
+
+// XXI. ВУЛКАН — Сердце Магмы
+registerBoss({
+  key: 'volcano', name: 'ВУЛКАН', epithet: 'Сердце Магмы', color: '#ea580c',
+  stats: { baseHp: 3250, speed: 170, atkRate: 0.80, spRate: 2.9, radius: 38, desiredDist: 185, projShape: 'orb', projSpread: 0.24 },
+  signature: { type: 'firestorm', name: '🔥 ОГНЕННЫЙ ШТОРМ', hint: 'Пылающие костры и волна огня — прыгай рывком!', col: '#ea580c', cast: 0.75 },
+  altSignature: 'quake',
+  achievement: { id: 'boss_volcano', title: 'Угасшая Лава', desc: 'Низвергнуть XXI. Вулкана («Сердце Магмы»)', icon: '🌋' },
+  fireSpecial(b, aim) { b.startCrushingJump(); b.spawnFloorBlades('cross'); },
+  build3D({ A, M, shell, glow }) {
+    A(M(new THREE.ConeGeometry(1.75, 3.2, 7), shell), 0, 1.6, 0);
+    const core = A(M(new THREE.SphereGeometry(0.9, 14, 12), glow), 0, 3.1, 0);
+    return t => { core.scale.setScalar(1 + Math.sin(t * 6) * 0.18); };
+  }
+});
+
+// XXII. БЕЗДНА — Глаз Пустоты
+registerBoss({
+  key: 'abyss_eye', name: 'БЕЗДНА', epithet: 'Глаз Пустоты', color: '#6366f1',
+  stats: { baseHp: 3400, speed: 185, atkRate: 0.78, spRate: 2.9, radius: 35, desiredDist: 225, projShape: 'blade', projSpread: 0.25 },
+  signature: { type: 'vortex', name: '🌀 ВОДОВОРОТ ДУШ', hint: 'Вихрь затягивает внутрь — рви дистанцию рывком!', col: '#6366f1', cast: 0.75 },
+  altSignature: 'blackout',
+  achievement: { id: 'boss_abyss', title: 'Взгляд в Пустоту', desc: 'Низвергнуть XXII. Бездну («Глаз Пустоты»)', icon: '👁️' },
+  fireSpecial(b, aim) {
+    for (let i = 0; i < 3; i++) b.lasers.push({ angle: aim + (i / 3) * Math.PI * 2, rotSpeed: 1.0, len: 560, life: 1.9, color: '#6366f1', dodged: false });
+  },
+  build3D({ A, M, glow, white, stdMat }) {
+    A(M(new THREE.SphereGeometry(1.4, 20, 16), stdMat('#0b0720', { roughness: 0.2 })), 0, 2.5, 0);
+    A(M(new THREE.SphereGeometry(0.55, 14, 12), white), 1.15, 2.5, 0);
+    const r = A(M(new THREE.TorusGeometry(2.2, 0.08, 8, 40), glow), 0, 2.5, 0);
+    return t => { r.rotation.set(t * 1.4, t, 0); };
+  }
+});
+
+// XXIII. ВАЛЬКИРИЯ — Крылья Стали
+registerBoss({
+  key: 'valkyrie', name: 'ВАЛЬКИРИЯ', epithet: 'Крылья Стали', color: '#f472b6',
+  stats: { baseHp: 3550, speed: 210, atkRate: 0.76, spRate: 2.8, radius: 32, desiredDist: 190, projShape: 'blade', projSpread: 0.22 },
+  signature: { type: 'judgement', name: '⚔️ ПРИГОВОР НЕБЕС', hint: 'Карающие мечи бьют с небес волнами!', col: '#f472b6', cast: 0.8 },
+  altSignature: 'pendulum',
+  achievement: { id: 'boss_valkyrie', title: 'Сломанные Крылья', desc: 'Низвергнуть XXIII. Валькирию («Крылья Стали»)', icon: '🪽' },
+  fireSpecial(b, aim) { b.startDash(aim); b.spawnFloorBlades('line'); },
+  build3D({ A, M, shell, glow, white }) {
+    A(M(new THREE.ConeGeometry(0.95, 2.9, 8), shell), 0, 1.45, 0);
+    A(M(new THREE.SphereGeometry(0.45, 12, 10), white), 0, 3.1, 0);
+    const wings = [];
+    [-1, 1].forEach(s => {
+      const piv = A(new THREE.Group(), -0.2, 2.6, s * 0.7);
+      const w = M(new THREE.BoxGeometry(0.45, 0.08, 3.5), glow); w.position.z = s * 1.75; piv.add(w);
+      wings.push({ piv, s });
+    });
+    return t => { wings.forEach(W => { W.piv.rotation.x = W.s * Math.sin(t * 6) * 0.45; }); };
+  }
+});
+
+// XXIV. ЧУМА — Чёрный Лекарь
+registerBoss({
+  key: 'plague', name: 'ЧУМА', epithet: 'Чёрный Лекарь', color: '#84cc16',
+  stats: { baseHp: 3700, speed: 185, atkRate: 0.78, spRate: 2.9, radius: 33, desiredDist: 210, projShape: 'orb', projSpread: 0.26 },
+  signature: { type: 'swarm', name: '🐝 РОЙ', hint: 'Самонаводка — парируй или уклоняйся!', col: '#84cc16', cast: 0.65 },
+  altSignature: 'webs',
+  achievement: { id: 'boss_plague', title: 'Исцеление Огнём', desc: 'Низвергнуть XXIV. Чуму («Чёрный Лекарь»)', icon: '☣️' },
+  fireSpecial(b) {
+    const spd = 320 * (activeContract === 'double_down' ? 1.4 : 1);
+    for (let i = 0; i < 14; i++) { const a = (i / 14) * Math.PI * 2 + b.animTime; projectiles.push(new Projectile(b.x, b.y, Math.cos(a) * spd, Math.sin(a) * spd, 8, '#84cc16', 1, 'orb')); }
+  },
+  build3D({ A, M, shell, glow }) {
+    A(M(new THREE.CylinderGeometry(0.6, 1.3, 3.0, 8), shell), 0, 1.5, 0);
+    const beak = A(M(new THREE.ConeGeometry(0.24, 0.95, 6), glow), 0.7, 3.1, 0); beak.rotation.z = -Math.PI / 2;
+    const orbs = [];
+    for (let i = 0; i < 4; i++) orbs.push(A(M(new THREE.SphereGeometry(0.22, 8, 8), glow)));
+    return t => { orbs.forEach((o, i) => { const a = t * 2.5 + i * Math.PI / 2; o.position.set(Math.cos(a) * 1.9, 2.2 + Math.sin(t * 4 + i) * 0.4, Math.sin(a) * 1.9); }); };
+  }
+});
+
+// XXV. МИРАЖ — Песчаный Дух
+registerBoss({
+  key: 'mirage', name: 'МИРАЖ', epithet: 'Песчаный Дух', color: '#fbbf24',
+  stats: { baseHp: 3850, speed: 205, atkRate: 0.76, spRate: 2.8, radius: 31, desiredDist: 200, projShape: 'blade', projSpread: 0.24 },
+  signature: { type: 'invis', name: '👻 НЕВИДИМОСТЬ', hint: 'Мираж исчез! Следи за следами и сбей его ударом!', col: '#fbbf24', cast: 0.6 },
+  altSignature: 'mirrorsplit',
+  achievement: { id: 'boss_mirage', title: 'Развеянный Песок', desc: 'Низвергнуть XXV. Миража («Песчаный Дух»)', icon: '⏳' },
+  fireSpecial(b, aim) { b.startDash(aim); b.spawnFloorBlades('cross'); },
+  build3D({ A, M, glow, stdMat }) {
+    const m = stdMat('#291c07', { transparent: true, opacity: 0.78 });
+    A(M(new THREE.ConeGeometry(1.15, 3.2, 6), m), 0, 1.6, 0);
+    const r = A(M(new THREE.TorusGeometry(1.7, 0.08, 6, 32), glow), 0, 2.4, 0);
+    return t => { r.rotation.set(Math.PI / 2, 0, t * 3); };
+  }
+});
+
+// XXVI. ЛЕВИАФАН — Глубинный Ужас
+registerBoss({
+  key: 'leviathan', name: 'ЛЕВИАФАН', epithet: 'Глубинный Ужас', color: '#0ea5e9',
+  stats: { baseHp: 4050, speed: 185, atkRate: 0.76, spRate: 2.8, radius: 37, desiredDist: 205, projShape: 'orb', projSpread: 0.25 },
+  signature: { type: 'frostfield', name: '❄️ ЛЕДЯНОЕ ПОЛЕ', hint: 'Лёд сковывает движения — уходи с замёрзших зон!', col: '#0ea5e9', cast: 0.7 },
+  altSignature: 'safezone',
+  achievement: { id: 'boss_leviathan', title: 'Покоритель Глубин', desc: 'Низвергнуть XXVI. Левиафана («Глубинный Ужас»)', icon: '🌊' },
+  fireSpecial(b, aim) { b.startCrushingJump(); b.spawnFloorBlades('line'); },
+  build3D({ A, M, shell, glow }) {
+    const body = A(M(new THREE.TorusKnotGeometry(1.1, 0.32, 48, 8), shell), 0, 2.3, 0);
+    const ring = A(M(new THREE.TorusGeometry(2.1, 0.06, 6, 36), glow), 0, 2.3, 0);
+    return t => { body.rotation.y = t * 1.2; ring.rotation.x = t * 1.6; };
+  }
+});
+
+// XXVII. КОЛОСС — Железный Страж
+registerBoss({
+  key: 'colossus', name: 'КОЛОСС', epithet: 'Железный Страж', color: '#94a3b8',
+  stats: { baseHp: 4300, speed: 165, atkRate: 0.80, spRate: 2.9, radius: 40, desiredDist: 180, projShape: 'orb', projSpread: 0.22 },
+  signature: { type: 'altars', name: '🕯️ АЛТАРИ КРОВИ', hint: 'Босс НЕУЯЗВИМ и лечится — разруби алтари катаной!', col: '#94a3b8', cast: 0.75 },
+  altSignature: 'armor',
+  achievement: { id: 'boss_colossus', title: 'Падение Колосса', desc: 'Низвергнуть XXVII. Колосса («Железный Страж»)', icon: '🛡️' },
+  fireSpecial(b, aim) { b.startCrushingJump(); b.startDash(aim); },
+  build3D({ A, M, shell, glow }) {
+    A(M(new THREE.BoxGeometry(2.2, 3.6, 2.2), shell), 0, 1.8, 0);
+    A(M(new THREE.BoxGeometry(2.3, 0.25, 2.3), glow), 0, 2.8, 0);
+    return t => {};
+  }
+});
+
+// XXVIII. СЕРАФИМ — Ослепляющий Свет
+registerBoss({
+  key: 'seraphim', name: 'СЕРАФИМ', epithet: 'Ослепляющий Свет', color: '#fde047',
+  stats: { baseHp: 4500, speed: 195, atkRate: 0.74, spRate: 2.7, radius: 34, desiredDist: 225, projShape: 'blade', projSpread: 0.26 },
+  signature: { type: 'lightning', name: '🌩️ РАЗРЯД МОЛНИЙ', hint: 'Молнии бьют с небес по отмеченным точкам!', col: '#fde047', cast: 0.65 },
+  altSignature: 'prism',
+  achievement: { id: 'boss_seraphim', title: 'Гаситель Света', desc: 'Низвергнуть XXVIII. Серафима («Ослепляющий Свет»)', icon: '✨' },
+  fireSpecial(b, aim) {
+    for (let i = 0; i < 4; i++) b.lasers.push({ angle: aim + (i / 4) * Math.PI * 2, rotSpeed: 1.05, len: 580, life: 1.9, color: '#fde047', dodged: false });
+  },
+  build3D({ A, M, glow, white }) {
+    A(M(new THREE.OctahedronGeometry(1.5), glow), 0, 2.7, 0);
+    const r1 = A(M(new THREE.TorusGeometry(2.3, 0.07, 6, 40), white), 0, 2.7, 0);
+    const r2 = A(M(new THREE.TorusGeometry(2.6, 0.07, 6, 40), glow), 0, 2.7, 0);
+    return t => { r1.rotation.set(t * 1.6, t, 0); r2.rotation.set(-t, t * 1.4, 0); };
+  }
+});
+
+// XXIX. ЭКЛИПС — Тень Затмения (с Луной-близнецом!)
+registerBoss({
+  key: 'eclipse_lord', name: 'ЭКЛИПС', epithet: 'Тень Затмения', color: '#a855f7',
+  stats: { baseHp: 4700, speed: 200, atkRate: 0.74, spRate: 2.7, radius: 35, desiredDist: 195, projShape: 'blade', projSpread: 0.25, hasTwin: true },
+  signature: { type: 'eclipse', name: '🌗 ЗАТМЕНИЕ', hint: 'Не стой между Эклипсом и его Луной!', col: '#a855f7', cast: 0.75 },
+  altSignature: 'mirror',
+  achievement: { id: 'boss_eclipse', title: 'Владыка Затмения', desc: 'Низвергнуть XXIX. Эклипса («Тень Затмения»)', icon: '🌑' },
+  fireSpecial(b, aim) { b.startDash(aim); b.spawnFloorBlades('cross'); },
+  build3D({ A, M, shell, glow }) {
+    A(M(new THREE.SphereGeometry(1.45, 20, 16), shell), 0, 2.5, 0);
+    const ring = A(M(new THREE.TorusGeometry(2.1, 0.12, 8, 40), glow), 0, 2.5, 0);
+    return t => { ring.rotation.set(Math.PI / 3, t * 2, 0); };
+  }
+});
+
+// XXX. ВЕЧНОСТЬ — Создатель Бездны (Финальный 30-й босс)
+registerBoss({
+  key: 'eternity', name: 'ВЕЧНОСТЬ', epithet: 'Создатель Бездны', color: '#ff1744',
+  stats: { baseHp: 5600, speed: 215, atkRate: 0.70, spRate: 2.5, radius: 40, desiredDist: 205, projShape: 'blade', projSpread: 0.28 },
+  signature: { type: 'absolute', name: '👑 ВОЛЯ СОЗДАТЕЛЯ', hint: 'Владеет ВСЕМИ силами 30 боссов Бездны!', col: '#ff1744', cast: 0.7 },
+  achievement: { id: 'boss_eternity', title: 'Абсолютный Ронин', desc: 'Низвергнуть XXX. Вечность («Создатель Бездны»)', icon: '🏆' },
+  fireSpecial(b, aim) {
+    const r = Math.random();
+    if (r < 0.33) { b.startCrushingJump(); b.spawnFloorBlades('cross'); }
+    else if (r < 0.66) { b.startDash(aim); b.spawnFloorBlades('line'); }
+    else { for (let i = 0; i < 4; i++) b.lasers.push({ angle: aim + (i / 4) * Math.PI * 2, rotSpeed: 1.2, len: 600, life: 2.0, color: '#ff1744', dodged: false }); }
+  },
+  build3D({ A, M, shell, glow, white, glowMat }) {
+    A(M(new THREE.IcosahedronGeometry(1.7, 1), shell), 0, 2.8, 0);
+    A(M(new THREE.SphereGeometry(0.7, 16, 12), white), 1.2, 2.8, 0);
+    const gold = glowMat('#fde047', 2.4);
+    const r1 = A(M(new THREE.TorusGeometry(2.5, 0.08, 8, 48), gold), 0, 2.8, 0);
+    const r2 = A(M(new THREE.TorusGeometry(3.1, 0.06, 8, 48), glow), 0, 2.8, 0);
+    const halo = A(M(new THREE.TorusGeometry(1.3, 0.09, 8, 40), gold), 0, 5.1, 0); halo.rotation.x = Math.PI / 2;
+    return t => { r1.rotation.set(t * 1.4, t, 0); r2.rotation.set(-t, t * 1.2, t * 0.5); halo.rotation.z = t * 2; };
+  }
+});
+
 /* =========================================================================
    ШАБЛОН ДЛЯ ДОБАВЛЕНИЯ НОВОГО БОССА В БУДУЩЕМ:
    Достаточно раскомментировать блок ниже — меню, Пантеон, сохранения,

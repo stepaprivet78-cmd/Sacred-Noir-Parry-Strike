@@ -263,6 +263,7 @@
 
         <!-- Quick HUD Buttons (Right) -->
         <div class="flex items-center gap-1.5 pointer-events-auto">
+          <button id="hud-btn-cam" class="px-2.5 py-1.5 bg-zinc-950/85 hover:bg-zinc-800 border border-zinc-700/80 rounded-lg text-xs font-bold text-zinc-200 transition" title="Сменить камеру">🎥</button>
           <button id="hud-btn-music" class="px-2.5 py-1.5 bg-zinc-950/85 hover:bg-zinc-800 border border-zinc-700/80 rounded-lg text-xs font-bold text-zinc-200 transition">🔊</button>
           <button id="hud-btn-pause" class="px-2.5 py-1.5 bg-zinc-950/85 hover:bg-rose-950/80 border border-zinc-700/80 hover:border-rose-500 rounded-lg text-xs font-bold text-zinc-100 transition">⏸ ПАУЗА</button>
         </div>
@@ -317,83 +318,122 @@
       </div>
     </div>
 
-    <!-- MAIN MENU -->
-    <div id="main-menu" class="scrollable-panel absolute inset-0 z-30 flex flex-col items-center justify-start overflow-y-auto bg-[#070205]/95 p-4 sm:p-6">
-      <div class="ritual-ring-1"></div>
-      <div class="ritual-ring-2"></div>
-      <div class="fixed inset-0 blood-vignette"></div>
-      <div class="fixed inset-0 crt-scanlines"></div>
+    <!-- MAIN MENU (MINIMALIST SOULS-STYLE OVER LIVE 3D ARENA) -->
+    <div id="main-menu" class="scrollable-panel absolute inset-0 z-30 flex items-start sm:items-center justify-center sm:justify-start overflow-y-auto bg-gradient-to-r from-[#070205]/95 via-[#070205]/65 sm:via-[#070205]/45 to-[#070205]/25 sm:to-transparent p-4 sm:p-8 md:pl-14">
+      <div class="fixed inset-0 blood-vignette pointer-events-none"></div>
 
-      <div class="relative z-10 w-full max-w-5xl flex flex-col items-center py-2 pb-12">
+      <div class="relative z-10 w-full max-w-sm flex flex-col gap-3.5 py-2 pb-8">
         <!-- Title Header -->
-        <div class="text-center mb-4">
-          <div class="text-[10px] sm:text-xs font-black tracking-[0.45em] text-rose-500/90 uppercase mb-1">
-            PARRY &amp; STRIKE · BOSS RUSH
+        <div class="text-center sm:text-left">
+          <div class="text-[10px] font-black tracking-[0.42em] text-rose-500/90 uppercase mb-1">
+            3D BOSS RUSH · PARRY &amp; STRIKE
           </div>
-          <h1 class="font-serif-noir text-3xl sm:text-5xl md:text-6xl font-black tracking-[0.16em] text-zinc-100 title-glow">
+          <h1 class="font-serif-noir text-3xl sm:text-4xl md:text-5xl font-black tracking-[0.14em] text-zinc-100 title-glow leading-tight">
             САКРАЛЬНЫЙ НУАР
           </h1>
-          <div class="w-56 sm:w-80 h-[2px] mx-auto mt-2.5 bg-gradient-to-r from-transparent via-rose-600 to-transparent"></div>
+          <div class="w-44 sm:w-56 h-[2px] mx-auto sm:mx-0 mt-2.5 bg-gradient-to-r from-rose-600 via-rose-500/50 to-transparent"></div>
         </div>
 
-        <!-- Primary Action Bar -->
-        <div class="w-full flex flex-wrap items-center justify-center gap-2 mb-4">
-          <button id="btn-pantheon" class="px-4 py-2 bg-gradient-to-r from-rose-950 via-red-900 to-rose-950 hover:from-rose-800 hover:to-red-800 border border-amber-400/80 rounded-lg text-xs font-black tracking-wider text-amber-200 shadow-[0_0_18px_rgba(225,29,72,0.45)] transition">
-            ⚔️ ПАНТЕОН (12 ПОДРЯД) · 0/12
+        <!-- Primary Modes -->
+        <div class="flex flex-col gap-2">
+          <button id="btn-open-bosses" class="w-full px-4 py-3 bg-gradient-to-r from-rose-900/95 via-red-800/90 to-rose-950/90 hover:from-rose-700 hover:to-red-800 border border-rose-400/80 rounded-xl text-left flex items-center justify-between shadow-[0_0_24px_rgba(225,29,72,0.4)] transition group">
+            <div>
+              <div class="font-serif-noir text-sm sm:text-base font-black tracking-widest text-white">⚔️ ВЫБОР БОССА</div>
+              <div class="text-[10px] text-rose-200/80">30 уникальных боссов и контракты</div>
+            </div>
+            <span class="text-rose-300 font-black group-hover:translate-x-1 transition">→</span>
           </button>
-          <button id="btn-armory" class="px-3.5 py-2 bg-zinc-950/90 hover:bg-rose-950/70 border border-rose-800/80 hover:border-rose-400 rounded-lg text-[11px] font-bold tracking-wider text-rose-200 transition shadow-md">
+
+          <button id="btn-tower" class="w-full px-4 py-2.5 bg-fuchsia-950/80 hover:bg-fuchsia-900/85 border border-fuchsia-500/70 rounded-xl text-xs font-black tracking-wider text-fuchsia-100 shadow-md transition text-left">
+            🗼 БАШНЯ · РЕКОРД 0
+          </button>
+
+          <button id="btn-pantheon" class="w-full px-4 py-2.5 bg-zinc-950/85 hover:bg-amber-950/60 border border-amber-500/60 rounded-xl text-xs font-black tracking-wider text-amber-200 shadow-md transition text-left">
+            ⚔️ ПАНТЕОН (20 ПОДРЯД) · 0/20
+          </button>
+        </div>
+
+        <!-- Combat Style Compact Selector (Live 3D Weapon Preview!) -->
+        <div class="p-3 rounded-xl bg-zinc-950/80 border border-zinc-800/90 backdrop-blur-sm">
+          <div class="text-[9px] font-black tracking-[0.28em] text-zinc-400 uppercase mb-1.5">БОЕВОЙ СТИЛЬ И ОРУЖИЕ</div>
+          <div class="grid grid-cols-3 gap-1.5">
+            <button data-style="ronin" class="style-choice px-2 py-1.5 rounded-lg text-[10px] font-black tracking-wider border transition">⚔️ РОНИН</button>
+            <button data-style="executioner" class="style-choice px-2 py-1.5 rounded-lg text-[10px] font-black tracking-wider border transition">🔥 ПАЛАЧ</button>
+            <button data-style="phantom" class="style-choice px-2 py-1.5 rounded-lg text-[10px] font-black tracking-wider border transition">💨 ПРИЗРАК</button>
+          </div>
+          <div id="style-desc-line" class="text-[10px] text-zinc-400 mt-1.5 leading-snug"></div>
+        </div>
+
+        <!-- Secondary Navigation (2x2 clean grid) -->
+        <div class="grid grid-cols-2 gap-2">
+          <button id="btn-armory" class="px-3 py-2 bg-zinc-950/85 hover:bg-rose-950/70 border border-rose-800/70 hover:border-rose-400 rounded-xl text-[11px] font-bold tracking-wider text-rose-200 transition">
             🗡️ ОРУЖЕЙНАЯ (1/5)
           </button>
-          <button id="btn-talismans" class="px-3.5 py-2 bg-zinc-950/90 hover:bg-emerald-950/70 border border-emerald-700/80 hover:border-emerald-400 rounded-lg text-[11px] font-bold tracking-wider text-emerald-200 transition shadow-md">
+          <button id="btn-talismans" class="px-3 py-2 bg-zinc-950/85 hover:bg-emerald-950/70 border border-emerald-700/70 hover:border-emerald-400 rounded-xl text-[11px] font-bold tracking-wider text-emerald-200 transition">
             💍 ТАЛИСМАНЫ (0/2)
           </button>
-          <button id="btn-achievements" class="px-3.5 py-2 bg-zinc-950/90 hover:bg-amber-950/70 border border-amber-600/80 hover:border-amber-400 rounded-lg text-[11px] font-bold tracking-wider text-amber-200 transition shadow-md">
-            🏆 АЧИВКИ (0/27)
+          <button id="btn-achievements" class="px-3 py-2 bg-zinc-950/85 hover:bg-amber-950/70 border border-amber-600/70 hover:border-amber-400 rounded-xl text-[11px] font-bold tracking-wider text-amber-200 transition">
+            🏆 АЧИВКИ (0/47)
           </button>
-          <button id="btn-codex" class="px-3.5 py-2 bg-zinc-950/90 hover:bg-cyan-950/70 border border-cyan-800/80 hover:border-cyan-400 rounded-lg text-[11px] font-bold tracking-wider text-cyan-200 transition shadow-md">
-            📖 КОДЕКС
-          </button>
-          <button id="btn-save-modal" class="px-3.5 py-2 bg-zinc-950/90 hover:bg-emerald-950/70 border border-emerald-800/80 hover:border-emerald-400 rounded-lg text-[11px] font-bold tracking-wider text-emerald-200 transition shadow-md">
-            💾 СЕЙВ
-          </button>
-          <button id="btn-perf-mode" class="px-3.5 py-2 bg-zinc-950/90 hover:bg-amber-950/70 border border-amber-800/80 hover:border-amber-400 rounded-lg text-[11px] font-bold tracking-wider text-amber-200 transition shadow-md">
-            ⚡ ГРАФИКА: ЛЁГКАЯ (60 FPS)
-          </button>
-          <button id="btn-fullscreen" class="px-3.5 py-2 bg-red-950/80 hover:bg-red-800 border border-red-600/80 rounded-lg text-[11px] font-bold tracking-wider text-white transition shadow-md">
-            ⛶ ПОЛНЫЙ ЭКРАН
+          <button id="btn-open-settings" class="px-3 py-2 bg-zinc-950/85 hover:bg-zinc-800 border border-zinc-700/80 hover:border-zinc-400 rounded-xl text-[11px] font-bold tracking-wider text-zinc-200 transition">
+            ⚙️ НАСТРОЙКИ
           </button>
         </div>
+      </div>
+    </div>
 
-        <!-- Audio & Unlock Row -->
-        <div class="w-full flex flex-wrap items-center justify-center gap-2 mb-5 text-[11px]">
-          <button id="btn-music-toggle" class="px-3 py-1.5 bg-zinc-950/90 hover:bg-zinc-800 border border-zinc-700 rounded-lg font-bold text-zinc-200 transition">
-            🔊 МУЗЫКА: ВКЛ
-          </button>
-          <button id="btn-track-switch" class="px-3 py-1.5 bg-zinc-950/90 hover:bg-zinc-800 border border-zinc-700 rounded-lg font-bold text-rose-300 transition">
-            💿 ТРЕК: GENERAL RELEASE
-          </button>
-          <label class="px-3 py-1.5 bg-zinc-950/90 hover:bg-zinc-800 border border-zinc-700 rounded-lg font-bold text-amber-200 cursor-pointer transition">
-            📂 СВОЙ MP3
+    <!-- BOSS SELECTION MODAL -->
+    <div id="bosses-modal" class="scrollable-panel hidden absolute inset-0 z-[44] bg-black/85 backdrop-blur-sm flex items-start sm:items-center justify-center p-3 sm:p-5 overflow-y-auto">
+      <div class="w-full max-w-5xl max-h-[92vh] flex flex-col bg-[#0d0508] border-2 border-rose-800/85 rounded-2xl p-4 sm:p-6 shadow-[0_0_50px_rgba(225,29,72,0.3)]">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3 shrink-0">
+          <div>
+            <div class="text-[10px] font-black tracking-[0.35em] text-rose-400 uppercase">ПАНТЕОН БЕЗДНЫ · 30 БОССОВ</div>
+            <h2 class="font-serif-noir text-xl sm:text-2xl font-black text-zinc-100 tracking-widest">⚔️ ВЫБОР БОССА</h2>
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-950/90 border border-zinc-800 rounded-lg text-[11px] text-zinc-300 cursor-pointer">
+              <input id="chk-unlock-all" type="checkbox" class="accent-rose-600" />
+              <span class="font-bold">🔓 ОТКРЫТЬ ВСЕХ</span>
+            </label>
+            <button id="btn-bosses-close" class="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-xs font-bold text-zinc-300">✕ ЗАКРЫТЬ</button>
+          </div>
+        </div>
+        <div id="boss-grid" class="scrollable-panel overflow-y-auto pr-1 w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5"></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS & TOOLS MODAL -->
+    <div id="settings-modal" class="scrollable-panel hidden absolute inset-0 z-[44] bg-black/85 backdrop-blur-sm flex items-start sm:items-center justify-center p-4 overflow-y-auto">
+      <div class="w-full max-w-md bg-[#0d0508] border-2 border-zinc-700/90 rounded-2xl p-5 shadow-2xl flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-[10px] font-black tracking-[0.35em] text-zinc-400 uppercase">СИСТЕМА И УПРАВЛЕНИЕ</div>
+            <h2 class="font-serif-noir text-xl font-black text-zinc-100 tracking-widest">⚙️ НАСТРОЙКИ</h2>
+          </div>
+          <button id="btn-settings-close" class="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-xs font-bold text-zinc-300">✕ ЗАКРЫТЬ</button>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <div class="text-[10px] font-black tracking-widest text-zinc-400 uppercase">ГРАФИКА И КАМЕРА</div>
+          <button id="btn-perf-mode" class="w-full px-3.5 py-2 bg-zinc-950 hover:bg-amber-950/60 border border-amber-800/70 rounded-lg text-xs font-bold text-amber-200 transition text-left">⚡ ГРАФИКА: ЛЁГКАЯ (60 FPS)</button>
+          <button id="btn-cam-mode" class="w-full px-3.5 py-2 bg-zinc-950 hover:bg-indigo-950/60 border border-indigo-700/70 rounded-lg text-xs font-bold text-indigo-200 transition text-left">🎥 КАМЕРА: ИЗОМЕТРИЯ</button>
+          <button id="btn-fullscreen" class="w-full px-3.5 py-2 bg-zinc-950 hover:bg-red-950/60 border border-red-800/70 rounded-lg text-xs font-bold text-zinc-200 transition text-left">⛶ ПОЛНЫЙ ЭКРАН</button>
+        </div>
+
+        <div class="flex flex-col gap-2 pt-2 border-t border-zinc-800">
+          <div class="text-[10px] font-black tracking-widest text-zinc-400 uppercase">ЗВУК И САУНДТРЕК</div>
+          <button id="btn-music-toggle" class="w-full px-3.5 py-2 bg-zinc-950 hover:bg-zinc-800 border border-zinc-700 rounded-lg text-xs font-bold text-zinc-200 transition text-left">🔊 МУЗЫКА: ВКЛ</button>
+          <button id="btn-track-switch" class="w-full px-3.5 py-2 bg-zinc-950 hover:bg-zinc-800 border border-zinc-700 rounded-lg text-xs font-bold text-rose-300 transition text-left">💿 ТРЕК: GENERAL RELEASE</button>
+          <label class="w-full px-3.5 py-2 bg-zinc-950 hover:bg-zinc-800 border border-zinc-700 rounded-lg text-xs font-bold text-amber-200 cursor-pointer transition block">
+            📂 ЗАГРУЗИТЬ СВОЙ MP3
             <input id="custom-mp3-input" type="file" accept="audio/*" class="hidden" />
           </label>
-          <label class="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-950/90 border border-zinc-800 rounded-lg text-zinc-300 cursor-pointer">
-            <input id="chk-unlock-all" type="checkbox" class="accent-rose-600" />
-            <span class="font-bold">🔓 ОТКРЫТЬ ВСЕХ</span>
-          </label>
         </div>
 
-        <!-- Combat Style Selector -->
-        <div class="w-full max-w-2xl flex flex-col items-center mb-4">
-          <div class="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2">
-            <button data-style="ronin" class="style-choice px-3 py-1.5 rounded-lg text-[11px] font-black tracking-wider border transition">⚔️ РОНИН · Баланс</button>
-            <button data-style="executioner" class="style-choice px-3 py-1.5 rounded-lg text-[11px] font-black tracking-wider border transition">🔥 ПАЛАЧ · Тяжёлый</button>
-            <button data-style="phantom" class="style-choice px-3 py-1.5 rounded-lg text-[11px] font-black tracking-wider border transition">💨 ПРИЗРАК · 3 рывка</button>
-          </div>
-          <div id="style-desc-line" class="text-[10px] sm:text-[11px] text-zinc-400 text-center mt-1.5 px-2"></div>
+        <div class="grid grid-cols-2 gap-2 pt-2 border-t border-zinc-800">
+          <button id="btn-codex" class="px-3 py-2 bg-zinc-950 hover:bg-cyan-950/70 border border-cyan-800/80 rounded-lg text-xs font-bold text-cyan-200 transition">📖 КОДЕКС</button>
+          <button id="btn-save-modal" class="px-3 py-2 bg-zinc-950 hover:bg-emerald-950/70 border border-emerald-800/80 rounded-lg text-xs font-bold text-emerald-200 transition">💾 СЕЙВ</button>
         </div>
-
-        <!-- Bosses Grid (Dynamic from BOSS_REGISTRY) -->
-        <div id="boss-grid" class="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5 sm:gap-3"></div>
       </div>
     </div>
 
@@ -510,6 +550,18 @@
             <div class="font-black text-red-300 mb-1">📜 КРОВАВЫЕ КОНТРАКТЫ</div>
             <p class="text-zinc-400 leading-relaxed">Перед каждым боем можно подписать сделку: 3x ускорение Иайдо, хардкорный «Кровавый долг» (парир = <b>5% HP</b>, но промах сжигает силы и урон x2) или ранг <b>S++</b>.</p>
           </div>
+          <div class="p-3 rounded-xl bg-zinc-950/90 border border-emerald-900/70">
+            <div class="font-black text-emerald-300 mb-1">🧪 ФЛЯГА И 💍 ТАЛИСМАНЫ</div>
+            <p class="text-zinc-400 leading-relaxed">На <b>R / F</b> (или кнопку 🧪) герой пьёт Флягу Крови (+1 HP), но на 0.88 сек замедляется — удар сбивает лечение! В меню доступны <b>2 слота Талисманов</b> под свой билд.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-zinc-950/90 border border-orange-900/70">
+            <div class="font-black text-orange-300 mb-1">🎭 3 СТИЛЯ И ОРУЖИЕ</div>
+            <p class="text-zinc-400 leading-relaxed"><b>Ронин</b> (катана, баланс), <b>Палач</b> (огромный тесак, +65% к слому концентрации) и <b>Призрак</b> (парные кинжалы, 3 рывка и крит ×2.5 после Идеального Уворота).</p>
+          </div>
+          <div class="p-3 rounded-xl bg-zinc-950/90 border border-indigo-900/70">
+            <div class="font-black text-indigo-300 mb-1">🕯️ АЛТАРИ, СОБЫТИЯ И 🗼 БАШНЯ</div>
+            <p class="text-zinc-400 leading-relaxed">Ломай <b>Алтари</b> (снимают неуязвимость босса), бей <b>Тотемы</b> и отбивай <b>Мины</b> катаной. В <b>Бесконечной Башне</b> выбирай 1 из 3 даров, а кнопкой <b>🎥</b> включай 3D-камеру за спиной!</p>
+          </div>
         </div>
       </div>
     </div>
@@ -609,6 +661,17 @@
       </div>
     </div>
 
+    <!-- TOWER BOON SELECTION MODAL (1 OF 3) -->
+    <div id="tower-boon-modal" class="scrollable-panel hidden absolute inset-0 z-[48] bg-black/90 backdrop-blur-sm flex items-start sm:items-center justify-center p-4 overflow-y-auto">
+      <div class="w-full max-w-3xl bg-[#0d0508] border-2 border-fuchsia-600/85 rounded-2xl p-5 sm:p-6 shadow-[0_0_50px_rgba(192,38,211,0.35)]">
+        <div class="text-center mb-4">
+          <div class="text-[10px] font-black tracking-[0.4em] text-fuchsia-400 uppercase">БЕСКОНЕЧНАЯ БАШНЯ · ДАРЫ БЕЗДНЫ</div>
+          <h2 id="tower-boon-title" class="font-serif-noir text-2xl sm:text-3xl font-black text-amber-200 tracking-widest mt-1">ЭТАЖ 1 ПРОЙДЕН · ВЫБЕРИ ДАР</h2>
+        </div>
+        <div id="tower-boon-grid" class="grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
+      </div>
+    </div>
+
     <!-- PORTRAIT ORIENTATION HINT -->
     <div id="portrait-overlay" class="hidden absolute inset-0 z-50 bg-black/95 flex flex-col items-center justify-center p-6 text-center">
       <div class="text-4xl mb-3">📱↻</div>
@@ -624,6 +687,7 @@
   <script src="js/bosskit.js"></script>
   <script src="js/stamina.js"></script>
   <script src="js/postfx.js"></script>
+  <script src="js/tower.js"></script>
   <script>
     // =========================================================================
     // CONSTANTS & DATA
@@ -753,6 +817,11 @@
     ];
     let equippedTalismans = [];
     function hasTalisman(id) { return equippedTalismans.includes(id); }
+    let cameraMode = 'iso'; // 'iso' | 'action'
+    function updateCameraUI() {
+      const btn = document.getElementById('btn-cam-mode');
+      if (btn) btn.textContent = cameraMode === 'action' ? '🎥 КАМЕРА: 3D-ЭКШЕН' : '🎥 КАМЕРА: ИЗОМЕТРИЯ';
+    }
 
     let unlockedBosses = 1;
     let unlockAllToggle = false;
@@ -807,6 +876,8 @@
         activeSkinId,
         activeStyleId,
         equippedTalismans,
+        cameraMode,
+        towerBestFloor: typeof TOWER !== 'undefined' ? TOWER.bestFloor : 0,
         pantheonBest,
         pantheonBestTime,
         records: bossRecords,
@@ -838,6 +909,8 @@
       if (Array.isArray(parsed.equippedTalismans)) {
         equippedTalismans = parsed.equippedTalismans.filter(id => TALISMANS_DATA.some(t => t.id === id)).slice(0, 2);
       }
+      if (parsed.cameraMode === 'action' || parsed.cameraMode === 'iso') cameraMode = parsed.cameraMode;
+      if (typeof parsed.towerBestFloor === 'number' && typeof TOWER !== 'undefined') TOWER.bestFloor = parsed.towerBestFloor;
       if (typeof parsed.pantheonBest === 'number') pantheonBest = parsed.pantheonBest;
       if (typeof parsed.pantheonBestTime === 'number' || parsed.pantheonBestTime === null) pantheonBestTime = parsed.pantheonBestTime;
       if (parsed.records && typeof parsed.records === 'object') {
@@ -855,7 +928,7 @@
         });
       }
       if (typeof parsed.musicEnabled === 'boolean' && audio) audio.musicEnabled = parsed.musicEnabled;
-      if (typeof parsed.trackIndex === 'number' && audio) audio.trackIndex = parsed.trackIndex % 2;
+      if (typeof parsed.trackIndex === 'number' && audio) audio.trackIndex = parsed.trackIndex % 3;
       if (typeof parsed.lowGfx === 'boolean') lowGfx = parsed.lowGfx;
       if (typeof achSyncWithRecords === 'function') achSyncWithRecords(true);
       checkSkinUnlocks();
@@ -984,7 +1057,8 @@
           if (this.customTrackName) {
             btnTrack.textContent = `💿 MP3: ${this.customTrackName}`;
           } else {
-            btnTrack.textContent = this.trackIndex === 0 ? '💿 ТРЕК: GENERAL RELEASE' : '💿 ТРЕК: BEFORE EVERY LOAD';
+            const names = ['GENERAL RELEASE', 'BEFORE EVERY LOAD', 'SOULS ORGAN'];
+            btnTrack.textContent = `💿 ТРЕК: ${names[this.trackIndex] || names[0]}`;
           }
         }
         if (btnMusic) btnMusic.textContent = this.musicEnabled ? '🔊 МУЗЫКА: ВКЛ' : '🔇 МУЗЫКА: ВЫКЛ';
@@ -997,7 +1071,7 @@
           this.customAudio.pause();
           this.customAudio = null;
         }
-        this.trackIndex = (this.trackIndex + 1) % 2;
+        this.trackIndex = (this.trackIndex + 1) % 3;
         this.updateTrackUI();
         saveProgress();
         if (gameState === 'PLAYING' && this.musicEnabled) {
@@ -1037,7 +1111,7 @@
         const scheduleStep = () => {
           if (!this.musicEnabled || gameState !== 'PLAYING') return;
           this.playBeatStep();
-          const bpm = this.trackIndex === 0 ? (this.phase2 ? 136 : 126) : (this.phase2 ? 118 : 108);
+          const bpm = this.trackIndex === 2 ? (this.phase2 ? 124 : 104) : (this.trackIndex === 0 ? (this.phase2 ? 136 : 126) : (this.phase2 ? 118 : 108));
           const stepMs = (60 / bpm / 4) * 1000;
           this.musicTimer = setTimeout(scheduleStep, stepMs);
         };
@@ -1058,7 +1132,52 @@
         if (!this.ctx || this.ctx.state !== 'running') return;
         const now = this.ctx.currentTime;
         const s = this.step % 16;
+        const bar = Math.floor(this.step / 16) % 4;
         this.step++;
+
+        // Трек 2: SOULS ORGAN (готический орган + хоровой пэд + литавры)
+        if (this.trackIndex === 2) {
+          const roots = [146.83, 116.54, 196.00, 110.00]; // D3, Bb2, G3, A2
+          const chords = [
+            [146.83, 174.61, 220.00], // Dm
+            [116.54, 146.83, 174.61], // Bb
+            [196.00, 233.08, 293.66], // Gm
+            [110.00, 138.59, 164.81]  // A
+          ];
+          if (s === 0 || (this.phase2 && s === 8)) {
+            chords[bar].forEach((freq, idx) => {
+              const osc = this.ctx.createOscillator();
+              const g = this.ctx.createGain();
+              osc.type = idx === 0 ? 'sawtooth' : 'triangle';
+              osc.frequency.setValueAtTime(freq, now);
+              const f = this.ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.setValueAtTime(this.phase2 ? 1150 : 780, now);
+              g.gain.setValueAtTime(0.001, now);
+              g.gain.linearRampToValueAtTime(0.055, now + 0.08);
+              g.gain.exponentialRampToValueAtTime(0.001, now + 0.95);
+              osc.connect(f); f.connect(g); g.connect(this.ctx.destination);
+              osc.start(now); osc.stop(now + 0.98);
+            });
+          }
+          // Тяжёлые литавры
+          if (s === 0 || s === 6 || s === 12 || (this.phase2 && (s === 3 || s === 10 || s === 14))) {
+            const osc = this.ctx.createOscillator();
+            const g = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(roots[bar] * 0.65, now);
+            osc.frequency.exponentialRampToValueAtTime(38, now + 0.22);
+            g.gain.setValueAtTime(0.24, now);
+            g.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
+            osc.connect(g); g.connect(this.ctx.destination);
+            osc.start(now); osc.stop(now + 0.25);
+          }
+          // Органный арпеджио-мотив во 2-й фазе
+          if (this.phase2 && s % 2 === 0) {
+            const c = chords[bar];
+            const freq = c[(s / 2) % c.length] * 2;
+            this.playTone(freq, freq, 0.14, 'triangle', 0.045);
+          }
+          return;
+        }
 
         // Industrial Kick
         const kickHit = this.trackIndex === 0
@@ -1600,7 +1719,9 @@
       }
 
       getIaidoCost() {
-        return activeContract === 'blind_blade' ? 25 : 50;
+        const base = activeContract === 'blind_blade' ? 25 : 50;
+        const disc = (typeof TOWER !== 'undefined' && TOWER.active && TOWER.mods) ? TOWER.mods.iaidoDiscount : 0;
+        return Math.max(15, base - disc);
       }
 
       getIaidoMaxCd() {
@@ -1693,7 +1814,9 @@
         }
 
         // Aim angle
-        if (isTouchDevice) {
+        if (cameraMode === 'action' && document.pointerLockElement === canvas && typeof R3 !== 'undefined' && R3.actionYaw !== undefined) {
+          this.angle = R3.actionYaw;
+        } else if (isTouchDevice) {
           if (boss && !boss.dead) {
             this.angle = Math.atan2(boss.y - this.y, boss.x - this.x);
           } else if (Math.hypot(input.mx, input.my) > 0.1) {
@@ -2774,6 +2897,10 @@
         if (Math.random() < 0.35) spawnFloatingText(target.x, target.y - 40, '🛡️ БРОНЯ', '#a1a1aa', 13);
       }
       const skin = getActiveSkin();
+      if (typeof TOWER !== 'undefined' && TOWER.active && TOWER.mods) {
+        dmg = Math.round(dmg * TOWER.mods.dmgMult);
+        postureAmt = Math.round(postureAmt * TOWER.mods.postureMult);
+      }
       if (typeof ACH !== 'undefined' && ACH.run) ACH.run.dealtDamage = true;
       target.hp -= dmg;
       target.hitFlash = 0.08;
@@ -2815,6 +2942,10 @@
       player.y = target.y - Math.sin(player.angle) * 26;
       player.invuln = 0.7;
       player.addBlood(40);
+      if (typeof TOWER !== 'undefined' && TOWER.active && TOWER.mods && TOWER.mods.execHeal && player.hp < player.maxHp) {
+        player.hp++;
+        spawnFloatingText(player.x, player.y - 36, '🩸 КАЗНЬ +1 HP', '#4ade80', 15);
+      }
       target.staggerTimer = 0;
       target.posture = 0;
 
@@ -2913,7 +3044,7 @@
       rec.attempts++;
       saveProgress();
 
-      ['main-menu', 'contract-modal', 'result-modal', 'pause-codex-modal', 'armory-modal', 'achievements-modal', 'save-modal', 'slain-banner'].forEach(id => {
+      ['main-menu', 'bosses-modal', 'settings-modal', 'talismans-modal', 'tower-boon-modal', 'contract-modal', 'result-modal', 'pause-codex-modal', 'armory-modal', 'achievements-modal', 'save-modal', 'slain-banner'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.add('hidden');
       });
@@ -2998,6 +3129,7 @@
     }
 
     function finishFight(outcome) {
+      if (document.pointerLockElement) { try { document.exitPointerLock(); } catch (e) {} }
       gameState = 'RESULT';
       audio.stopMusic();
       document.getElementById('slain-banner').classList.add('hidden');
@@ -3036,6 +3168,10 @@
         const extraSkins = checkSkinUnlocks();
         extraSkins.forEach(s => unlockedMsgs.push(`🗡️ Открыт скин: ${s}!`));
 
+        if (typeof TOWER !== 'undefined' && TOWER.active) {
+          towerOnFloorCleared();
+          return;
+        }
         if (pantheonMode) {
           pantheonTotalTime += runTimer;
           if (currentBossIdx + 1 > pantheonBest) pantheonBest = currentBossIdx + 1;
@@ -3070,7 +3206,9 @@
           pantheonBest = currentBossIdx;
           saveProgress();
         }
-        subEl.textContent = pantheonMode ? `ПАНТЕОН ПРЕРВАН НА ${currentBossIdx + 1} / ${BOSSES_DATA.length}` : `${BOSSES_DATA[currentBossIdx].roman}. ${BOSSES_DATA[currentBossIdx].name}`;
+        subEl.textContent = (typeof TOWER !== 'undefined' && TOWER.active)
+          ? `БАШНЯ ЗАВЕРШЕНА НА ЭТАЖЕ ${TOWER.floor} (РЕКОРД: ${TOWER.bestFloor})`
+          : (pantheonMode ? `ПАНТЕОН ПРЕРВАН НА ${currentBossIdx + 1} / ${BOSSES_DATA.length}` : `${BOSSES_DATA[currentBossIdx].roman}. ${BOSSES_DATA[currentBossIdx].name}`);
         titleEl.textContent = 'ВЫ ПАЛИ';
         titleEl.className = 'font-serif-noir text-3xl font-black text-rose-500 tracking-widest mb-3';
         rankWrap.classList.add('hidden');
@@ -3083,9 +3221,10 @@
     }
 
     function returnToMenu() {
+      if (typeof TOWER !== 'undefined') TOWER.active = false;
       gameState = 'MENU';
       audio.stopMusic();
-      ['hud', 'touch-controls', 'result-modal', 'pause-codex-modal', 'contract-modal', 'armory-modal', 'achievements-modal', 'save-modal', 'boss-intro-overlay', 'slain-banner'].forEach(id => {
+      ['hud', 'touch-controls', 'bosses-modal', 'settings-modal', 'talismans-modal', 'tower-boon-modal', 'result-modal', 'pause-codex-modal', 'contract-modal', 'armory-modal', 'achievements-modal', 'save-modal', 'boss-intro-overlay', 'slain-banner'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.add('hidden');
       });
@@ -3205,13 +3344,24 @@
       if (input.keys['KeyS'] || input.keys['ArrowDown']) ky += 1;
       if (input.keys['KeyA'] || input.keys['ArrowLeft']) kx -= 1;
       if (input.keys['KeyD'] || input.keys['ArrowRight']) kx += 1;
+      let rawX = 0, rawY = 0;
       if (kx !== 0 || ky !== 0) {
         const l = Math.hypot(kx, ky);
-        input.mx = kx / l;
-        input.my = ky / l;
+        rawX = kx / l;
+        rawY = ky / l;
       } else {
-        input.mx = input.joyX;
-        input.my = input.joyY;
+        rawX = input.joyX;
+        rawY = input.joyY;
+      }
+      // В режиме камеры 3D-ЭКШЕН движение работает относительно спины героя (W — вперёд к боссу, A/D — стрейф)
+      if (cameraMode === 'action' && typeof R3 !== 'undefined' && R3.actionYaw !== undefined) {
+        const fwd = -rawY, strafe = rawX;
+        const cy = Math.cos(R3.actionYaw), sy = Math.sin(R3.actionYaw);
+        input.mx = fwd * cy - strafe * sy;
+        input.my = fwd * sy + strafe * cy;
+      } else {
+        input.mx = rawX;
+        input.my = rawY;
       }
 
       player.update(dt);
@@ -3301,6 +3451,10 @@
             player.rageTimer = 3.8;
             restoreStamina(player, 30);
             player.addBlood(40);
+      if (typeof TOWER !== 'undefined' && TOWER.active && TOWER.mods && TOWER.mods.execHeal && player.hp < player.maxHp) {
+        player.hp++;
+        spawnFloatingText(player.x, player.y - 36, '🩸 КАЗНЬ +1 HP', '#4ade80', 15);
+      }
             runParries++;
             if (typeof achOnParry === 'function') achOnParry();
             spawnParticles(p.x, p.y, pCol, 18, 250, 4.2, 0.32);
@@ -3308,6 +3462,11 @@
             spawnFloatingText(player.x, player.y - 28, '🛡️ ПАРИРОВАНИЕ! +40🩸', pCol, 15);
             if (boss && !boss.dead) {
               boss.addPosture(activeContract === 'blood_debt' ? 40 : 28);
+              if (typeof TOWER !== 'undefined' && TOWER.active && TOWER.mods && TOWER.mods.parryBolt > 0) {
+                const boltDmg = Math.max(10, Math.round(boss.maxHp * TOWER.mods.parryBolt));
+                spawnFloatingText(boss.x, boss.y - 54, `🌩️ ГРОМОВОЙ ОТБИВ -${boltDmg}`, '#facc15', 16);
+                damageBossTarget(boss, boltDmg, false, true, 0);
+              }
               if (activeContract === 'blood_debt') {
                 const debtDmg = Math.max(12, Math.round(boss.maxHp * 0.05));
                 if (typeof achSetDamageSource === 'function') achSetDamageSource('blood_debt');
@@ -3726,6 +3885,7 @@
 
     function togglePause() {
       if (gameState === 'PLAYING') {
+        if (document.pointerLockElement) { try { document.exitPointerLock(); } catch (e) {} }
         gameState = 'PAUSED';
         audio.stopMusic();
         document.getElementById('codex-title').textContent = '⏸ ПАУЗА · КОДЕКС';
@@ -3811,6 +3971,8 @@
       updateTalismansButton();
       if (typeof updateAchievementsButton === 'function') updateAchievementsButton();
       updatePantheonButton();
+      if (typeof updateTowerButton === 'function') updateTowerButton();
+      updateCameraUI();
       updateStyleUI();
       applyPerfMode();
       renderBossGrid();
@@ -3883,13 +4045,21 @@
 
       window.addEventListener('keyup', e => { input.keys[e.code] = false; });
 
-      canvas.addEventListener('mousemove', e => {
+      window.addEventListener('mousemove', e => {
+        if (cameraMode === 'action' && gameState === 'PLAYING' && document.pointerLockElement === canvas && typeof R3 !== 'undefined') {
+          R3.actionYaw = (R3.actionYaw || -Math.PI / 2) + e.movementX * 0.0042;
+          R3.actionPitch = Math.max(0.18, Math.min(0.88, (R3.actionPitch || 0.42) + e.movementY * 0.003));
+          return;
+        }
         const rect = canvas.getBoundingClientRect();
         setPointer3D((e.clientX - rect.left) / rect.width, (e.clientY - rect.top) / rect.height);
       });
       canvas.addEventListener('mousedown', e => {
         if (gameState !== 'PLAYING' || !player) return;
         audio.init();
+        if (cameraMode === 'action' && !isTouchDevice && document.pointerLockElement !== canvas && canvas.requestPointerLock) {
+          try { canvas.requestPointerLock(); } catch (err) {}
+        }
         if (e.button === 0) player.triggerAttack();
         if (e.button === 2) player.triggerParry();
       });
@@ -3963,11 +4133,33 @@
       bindTouchBtn('tbtn-iaido', () => player.triggerSpecial());
       bindTouchBtn('tbtn-flask', () => player.triggerFlask());
 
+      document.getElementById('btn-open-bosses').addEventListener('click', () => {
+        renderBossGrid();
+        document.getElementById('bosses-modal').classList.remove('hidden');
+      });
+      document.getElementById('btn-bosses-close').addEventListener('click', () => document.getElementById('bosses-modal').classList.add('hidden'));
+      document.getElementById('bosses-modal').addEventListener('click', e => {
+        if (e.target.id === 'bosses-modal') document.getElementById('bosses-modal').classList.add('hidden');
+      });
+      document.getElementById('btn-open-settings').addEventListener('click', () => document.getElementById('settings-modal').classList.remove('hidden'));
+      document.getElementById('btn-settings-close').addEventListener('click', () => document.getElementById('settings-modal').classList.add('hidden'));
+      document.getElementById('settings-modal').addEventListener('click', e => {
+        if (e.target.id === 'settings-modal') document.getElementById('settings-modal').classList.add('hidden');
+      });
       document.getElementById('btn-pantheon').addEventListener('click', () => {
+        if (typeof TOWER !== 'undefined') TOWER.active = false;
         pantheonTotalTime = 0;
         pantheonCarryHp = 3;
         startFight(0, null, true);
       });
+      document.getElementById('btn-tower').addEventListener('click', () => startEndlessTower());
+      const toggleCamera = () => {
+        cameraMode = cameraMode === 'iso' ? 'action' : 'iso';
+        updateCameraUI();
+        saveProgress();
+      };
+      document.getElementById('btn-cam-mode').addEventListener('click', toggleCamera);
+      document.getElementById('hud-btn-cam').addEventListener('click', toggleCamera);
       document.getElementById('btn-armory').addEventListener('click', openArmory);
       document.getElementById('btn-talismans').addEventListener('click', openTalismansModal);
       document.getElementById('btn-talismans-close').addEventListener('click', () => document.getElementById('talismans-modal').classList.add('hidden'));
@@ -4009,6 +4201,7 @@
         btn.addEventListener('click', () => {
           activeStyleId = btn.dataset.style;
           updateStyleUI();
+          if (typeof refreshPlayerSkin3D === 'function') refreshPlayerSkin3D();
           saveProgress();
         });
       });
@@ -4079,6 +4272,10 @@
       });
 
       document.getElementById('btn-res-retry').addEventListener('click', () => {
+        if (typeof TOWER !== 'undefined' && TOWER.active) {
+          startEndlessTower();
+          return;
+        }
         if (pantheonMode) {
           pantheonTotalTime = 0;
           pantheonCarryHp = 3;
